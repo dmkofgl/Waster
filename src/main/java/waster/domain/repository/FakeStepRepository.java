@@ -7,7 +7,7 @@ import waster.domain.entity.Step;
 import java.util.Arrays;
 import java.util.List;
 
-public class FakeStepRepository {
+public class FakeStepRepository  {
     private static FakeMachineRepository machineRepository = new FakeMachineRepository();
     private static FakeSettingsRepository settingsRepository = new FakeSettingsRepository();
 

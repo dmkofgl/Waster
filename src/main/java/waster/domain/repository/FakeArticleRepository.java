@@ -7,9 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class FakeArticleRepository {
+public class FakeArticleRepository  {
     private static FakeProcessMapRepository fakeProcessMapRepository = new FakeProcessMapRepository();
-    private static List<Article> articles = Arrays.asList(
+    public static List<Article> articles = Arrays.asList(
             createArticle(0L, "00с65гл+ВОсн", "11001"),
             createArticle(1L, "00с65гл+ВОсн", "130706"),
             createArticle(2L, "00с65гл+ВОсн", "261005"),

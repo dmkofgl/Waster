@@ -1,33 +1,20 @@
 package waster.domain.entity;
 
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
+import javax.persistence.*;
+import java.util.Date;
+@Entity
+@Getter
+@Setter
+@Table(name = "fabric_order")
 public class Order {
+    @Id
+    @GeneratedValue
+    private Long id;
+    @ManyToOne
     private Article article;
     private Double length;
     private Date date;
-
-    public Article getArticle() {
-        return article;
-    }
-
-    public void setArticle(Article article) {
-        this.article = article;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public Double getLength() {
-        return length;
-    }
-
-    public void setLength(Double length) {
-        this.length = length;
-    }
 }

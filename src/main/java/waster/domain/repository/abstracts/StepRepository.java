@@ -1,7 +1,7 @@
 package waster.domain.repository.abstracts;
 
 import org.springframework.data.repository.CrudRepository;
-import waster.domain.entity.Bench;
+import waster.domain.entity.Step;
 
-public interface BenchRepository extends CrudRepository<Bench,Long> {
+public interface StepRepository  extends CrudRepository<Step,Long> {
 }

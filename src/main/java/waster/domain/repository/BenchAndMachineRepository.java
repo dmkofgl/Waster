@@ -12,11 +12,29 @@ public class BenchAndMachineRepository {
         bindMap.add(machine, bench);
     }
 
-    public void addMachine(Machine machine) {
-      //  bindMap.add(machine, new Bench());
-    }
-
     public MultiValueMap<Machine, Bench> getBindMap() {
         return bindMap;
     }
+
+    public class Entry {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    public class PhoneDirectory {
+        private Entry[] entries;
+
+        public Entry searchEntry(String name) {
+            for (Entry entry : entries) {
+                if (entry.getName().equals(name)) {
+                    return entry;
+                }
+            }
+            throw new RuntimeException("There is no entry with name: "+name);
+        }
+    }
 }
+

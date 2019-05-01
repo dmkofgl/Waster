@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class FakeProcessMapRepository {
-    private static List<ProcessMap> processMaps = Arrays.asList(
+public class FakeProcessMapRepository  {
+    public static List<ProcessMap> processMaps = Arrays.asList(
             createProcessMap1(),
             createProcessMap2(),
             createProcessMap3(),

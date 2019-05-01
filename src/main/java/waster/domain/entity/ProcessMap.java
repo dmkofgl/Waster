@@ -1,17 +1,29 @@
 package waster.domain.entity;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
+import waster.domain.helper.GraphConverter;
 import waster.domain.repository.FakeStepRepository;
 
+import javax.persistence.*;
+import java.io.*;
 import java.util.List;
 
+@Entity
+@Getter
+@Setter
 public class ProcessMap {
     private static FakeStepRepository fakeStepRepository = new FakeStepRepository();
+    @Id
     private Long articleId;
-    Graph<Step, DefaultWeightedEdge> graph;
+
+    @Lob
+    @Convert(converter = GraphConverter.class)
+    private Graph<Long, DefaultWeightedEdge> graph;
 
     public ProcessMap() {
 
@@ -20,9 +32,8 @@ public class ProcessMap {
         addVertex(-1L);
         addVertex(-2L);
     }
+    private void initGraph(){
 
-    public Graph<Step, DefaultWeightedEdge> getGraph() {
-        return graph;
     }
 
     public void addStart(Long id) {
@@ -39,12 +50,12 @@ public class ProcessMap {
 
     public void addVertex(Long stepId) {
 
-        graph.addVertex(fakeStepRepository.getById(stepId));
+        graph.addVertex(stepId);
     }
 
     public void addEdge(Long stepSourceId, Long stepTargetId) {
-        graph.addEdge(fakeStepRepository.getById(stepSourceId), fakeStepRepository.getById(stepTargetId));
-        graph.setEdgeWeight(fakeStepRepository.getById(stepSourceId), fakeStepRepository.getById(stepTargetId), fakeStepRepository.getById(stepSourceId).getSetting().getWorkingTime());
+        graph.addEdge(stepSourceId, stepTargetId);
+        graph.setEdgeWeight(stepSourceId, stepTargetId, fakeStepRepository.getById(stepSourceId).getSetting().getWorkingTime());
     }
 
     public Long getArticleId() {
@@ -60,4 +71,5 @@ public class ProcessMap {
         List<Step> shortestPath = dijkstraShortestPath.getPath(fakeStepRepository.getById(-1L), fakeStepRepository.getById(-2L)).getVertexList();
         return shortestPath;
     }
+
 }

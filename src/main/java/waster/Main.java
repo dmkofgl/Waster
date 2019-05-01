@@ -42,16 +42,16 @@ public class Main {
     private static FakeStepRepository fakeStepRepository = new FakeStepRepository();
 
     public static void main(String[] args) {
-//        tryOrder();
-//
-//        try {
-//            outputInFile(tryCalendar());
-//            tryPrintChart();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        tryOrder();
+
+        try {
+            outputInFile(tryCalendar());
+            tryPrintChart();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try {
             treOputputShedule(tryCalendar());
         } catch (IOException e) {
@@ -75,7 +75,7 @@ public class Main {
             List<Schedule> schedules = calendar.getSchedule();
             temp += schedules.size() + 5;
 
-            final XYChart chart = new XYChartBuilder().width(600).height(400).title("Area Chart").xAxisTitle("X").yAxisTitle("Y").build();
+            final XYChart chart = new XYChartBuilder().width(600).height(400).title("Машина номер:"+bench.getId()).xAxisTitle("Время с начала расчетного периода").yAxisTitle("Количесвто операций").build();
 
 // Customize Chart
             chart.getStyler().setLegendPosition(Styler.LegendPosition.OutsideE);
@@ -89,7 +89,7 @@ public class Main {
                 k = k + 1;
                 chart.addSeries(+k + ")" + schedule.getOperation().getStep().getName(), x, y);
             }
-                chart.addSeries("RED_LINE", new double[]{RED_LINE, RED_LINE}, new double[]{0, schedules.size()}).setLineColor(Color.RED);
+                chart.addSeries("Конец смены", new double[]{RED_LINE, RED_LINE}, new double[]{0, schedules.size()}).setLineColor(Color.RED);
 
 
             BitmapEncoder.saveBitmapWithDPI(chart, "./benchGraph/" + bench.getId(), BitmapEncoder.BitmapFormat.PNG, 100);

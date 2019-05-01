@@ -2,16 +2,14 @@ package waster.domain.repository;
 
 import waster.domain.entity.Machine;
 import waster.domain.entity.Setting;
-import waster.domain.repository.abstracts.MachineRepository;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-public class FakeMachineRepository implements MachineRepository {
-    private static BenchAndMachineRepository benchAndMachineRepository = new BenchAndMachineRepository();
+public class FakeMachineRepository {
 
-    private static List<Machine> machines = Arrays.asList(
+    public static List<Machine> machines = Arrays.asList(
             createMachine(-1L, null, "ИСТОК", null),
             createMachine(-2L, null, "ВТОК", null),
             createMachine(82L, 157L, "CIBITEX", null),

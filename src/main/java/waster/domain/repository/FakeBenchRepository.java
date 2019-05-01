@@ -2,12 +2,11 @@ package waster.domain.repository;
 
 import waster.domain.entity.Bench;
 import waster.domain.entity.Machine;
-import waster.domain.repository.abstracts.BenchRepository;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class FakeBenchRepository implements BenchRepository {
+public class FakeBenchRepository {
     private static FakeMachineRepository machineRepository = new FakeMachineRepository();
     private static BenchAndMachineRepository benchAndMachineRepository = new BenchAndMachineRepository();
     private static List<Bench> benches = Arrays.asList(
@@ -77,7 +76,6 @@ public class FakeBenchRepository implements BenchRepository {
         return bench;
     }
 
-    @Override
     public List<Bench> getBenches() {
         return benches;
     }

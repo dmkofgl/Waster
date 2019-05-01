@@ -1,26 +1,21 @@
 package waster.domain.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.persistence.*;
+
+@Entity
+@Getter
+@Setter
 public class Bench {
     //номер машины
+    @Id
+    @GeneratedValue
     private int id;
     private String name;
+    @ManyToOne
     private Machine machine;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public Machine getMachine() {
-        return machine;
-    }
-
-    public void setMachine(Machine machine) {
-        this.machine = machine;
-    }
 
     @Override
     public boolean equals(Object obj) {

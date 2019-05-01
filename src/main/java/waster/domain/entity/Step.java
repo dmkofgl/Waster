@@ -1,54 +1,32 @@
 package waster.domain.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Getter
+@Setter
 public class Step {
+    @Id
+    @GeneratedValue
     private Long id;
+    @ManyToOne
     private Machine machine;
+    @ManyToOne
     private Setting setting;
     private String name;
-
-    public Machine getMachine() {
-        return machine;
-    }
-
-    public Setting getSetting() {
-        return setting;
-    }
-
-    public void setMachine(Machine machine) {
-        this.machine = machine;
-    }
-
-    public void setSetting(Setting setting) {
-        this.setting = setting;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
 
     @Override
     public String toString() {
         return "{" +
-                "m=" + machine.getNumberNew()+
+                "m=" + machine.getNumberNew() +
                 " " +
                 "s=" + setting.getId() +
                 '}';

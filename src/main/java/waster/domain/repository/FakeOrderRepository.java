@@ -5,7 +5,7 @@ import waster.domain.entity.Order;
 import java.util.Arrays;
 import java.util.List;
 
-public class FakeOrderRepository {
+public class FakeOrderRepository  {
     private static FakeArticleRepository fakeArticleRepository = new FakeArticleRepository();
     private List<Order> orders = Arrays.asList(
 //            createOrder(0L, 1000.0),
