@@ -53,6 +53,9 @@ public class Calendar {
     }
 
     public Long lastActionEndTime() {
-        return schedule.stream().map(Schedule::getEnd).max(Long::compareTo).orElse(0L);
+        return schedule.stream()
+                .map(Schedule::getEnd)
+                .max(Long::compareTo)
+                .orElse(0L);
     }
 }

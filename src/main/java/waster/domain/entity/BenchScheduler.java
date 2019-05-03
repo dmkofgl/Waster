@@ -11,14 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BenchSheduler {
+public class BenchScheduler {
     private final Long LIMIT;
     private static FakeBenchRepository fakeBenchRepository = new FakeBenchRepository();
     private static BenchAndMachineRepository benchAndMachineRepository = new BenchAndMachineRepository();
     private MultiValueMap<Machine, Bench> bindMap = benchAndMachineRepository.getBindMap();
     private Map<Bench, Calendar> benchCalendarMap = new HashMap<>();
 
-    public BenchSheduler(Long limit) {
+    public BenchScheduler(Long limit) {
         this.LIMIT = limit;
     }
 
@@ -32,19 +32,19 @@ public class BenchSheduler {
         List<Bench> benches = bindMap.get(machine);
         //
         Bench optimalBench = benches.stream().min((x, y) -> {
-            Calendar calendar1 = benchCalendarMap.get(x);
-            if (calendar1 == null) {
-                calendar1 = new Calendar();
-                benchCalendarMap.put(x, calendar1);
+            Calendar calendarPrev = benchCalendarMap.get(x);
+            if (calendarPrev == null) {
+                calendarPrev = new Calendar();
+                benchCalendarMap.put(x, calendarPrev);
             }
-            Calendar calendar2 = benchCalendarMap.get(y);
-            if (calendar2 == null) {
-                calendar2 = new Calendar();
-                benchCalendarMap.put(y, calendar2);
+            Calendar calendarNext = benchCalendarMap.get(y);
+            if (calendarNext == null) {
+                calendarNext = new Calendar();
+                benchCalendarMap.put(y, calendarNext);
             }
-            Schedule schedule1 = calendar1.applyOperation(operation);
-            Schedule schedule2 = calendar2.applyOperation(operation);
-            return Long.compare(schedule1.getStart(), schedule2.getStart());
+            Schedule schedulePrev = calendarPrev.applyOperation(operation);
+            Schedule scheduleNext = calendarNext.applyOperation(operation);
+            return Long.compare(schedulePrev.getStart(), scheduleNext.getStart());
         }).get();
        if(! benchCalendarMap.containsKey(optimalBench)){
            benchCalendarMap.put(optimalBench, new Calendar());

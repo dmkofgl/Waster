@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class FakeArticleRepository  {
+public class FakeArticleRepository {
     private static FakeProcessMapRepository fakeProcessMapRepository = new FakeProcessMapRepository();
     public static List<Article> articles = Arrays.asList(
             createArticle(0L, "00с65гл+ВОсн", "11001"),
@@ -22,7 +22,6 @@ public class FakeArticleRepository  {
     );
 
     private static Article createArticle(Long id, String art, String color) {
-
         Article article = new Article();
         article.setName(art);
         article.setColoring(color);

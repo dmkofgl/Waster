@@ -12,7 +12,7 @@ public class Bench {
     //номер машины
     @Id
     @GeneratedValue
-    private int id;
+    private Long id;
     private String name;
     @ManyToOne
     private Machine machine;
