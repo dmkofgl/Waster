@@ -42,6 +42,7 @@ public class DbInitializer implements CommandLineRunner {
         initMachines();
         initSettings();
         initBenches();
+        initStep();
     }
 
     private void initArticles() {
@@ -204,7 +205,7 @@ public class DbInitializer implements CommandLineRunner {
                 .id(id)
                 .name(name)
                 .machine(machine.get())
-                .setting(setting.get())
+                .setting(setting.orElse(null))
                 .build();
     }
 }

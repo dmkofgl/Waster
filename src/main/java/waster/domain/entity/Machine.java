@@ -10,7 +10,6 @@ import java.util.List;
 @Setter
 public class Machine {
     @Id
-    @GeneratedValue
     private Long numberNew;
     private Long numberOld;
     private String name;

@@ -15,7 +15,6 @@ public class Setting {
    Время обработки 1 погонного метра ткани
     */
     @Id
-    @GeneratedValue
     private Long id;
     private Long workingTime;
     private Long prepareTime;
