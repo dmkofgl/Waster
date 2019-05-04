@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-//TODO replace this method in service class
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class ScheduleOutputInPictureTest {

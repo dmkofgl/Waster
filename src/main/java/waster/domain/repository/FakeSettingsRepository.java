@@ -7,14 +7,15 @@ import java.util.List;
 
 public class FakeSettingsRepository {
     private static final Long BASE_PREPARE_TIME = 15 * 60 * 1000L;
+    //TODO REPLACE WORKING TIME TO WORKING SPEED
     public static List<Setting> settings = Arrays.asList(
-            createSetting(-1L, 1L, 0L),
-            createSetting(-2L, 1L, 0L),
-            createSetting(274L,  1000L),
+            createSetting(-1L, 1.0, 0L),
+            createSetting(-2L, 1.0, 0L),
+            createSetting(274L, 1000L),
             createSetting(100L, 1200L),
             createSetting(115L, 1143L),
-            createSetting(89L, 25_200_000L),
-            createSetting(90L, 5 * 60 * 1000L),
+            createSetting(89L, 25_200_000.0, BASE_PREPARE_TIME, false),
+            createSetting(90L, 5 * 60 * 1000.0, BASE_PREPARE_TIME, false),
             createSetting(105L, 5 * 60 * 1000L),
             createSetting(116L, 1200L),
             createSetting(88L, 3429L),
@@ -41,20 +42,24 @@ public class FakeSettingsRepository {
             createSetting(258L, 5 * 60 * 1000L)
     );
 
-    private static Setting createSetting(Long id, Long workingTime) {
-        return createSetting(id, workingTime, BASE_PREPARE_TIME);
+    private static Setting createSetting(Long id, Double workingSpeed) {
+        return createSetting(id, workingSpeed, BASE_PREPARE_TIME);
     }
 
-    private static Setting createSetting(Long id, Long workingTime, Long prepareTime) {
-        return createSetting(id, workingTime, prepareTime,false);
+    private static Setting createSetting(Long id, Long workingSpeed) {
+        return createSetting(id, new Double(workingSpeed), BASE_PREPARE_TIME);
     }
 
-    private static Setting createSetting(Long id, Long workingTime, Long prepareTime, Boolean isDependOfTime) {
+    private static Setting createSetting(Long id, Double workingSpeed, Long prepareTime) {
+        return createSetting(id, workingSpeed, prepareTime, true);
+    }
+
+    private static Setting createSetting(Long id, Double workingSpeed, Long prepareTime, Boolean isDependOfTime) {
         Setting setting = new Setting();
         setting.setPrepareTime(prepareTime);
-        setting.setWorkingTime(workingTime);
+        setting.setWorkingSpeed(workingSpeed);
         setting.setId(id);
-        setting.setTimeDependOLength(isDependOfTime);
+        setting.setTimeDependOnLength(isDependOfTime);
         return setting;
     }
 

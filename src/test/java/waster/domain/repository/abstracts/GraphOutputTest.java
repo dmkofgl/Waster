@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+//TODO replace this method in service class
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class GraphOutputTest {

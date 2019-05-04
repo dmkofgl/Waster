@@ -6,7 +6,6 @@ import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.style.Styler;
 import waster.domain.entity.Bench;
-import waster.domain.entity.BenchScheduler;
 import waster.domain.entity.calendar.Calendar;
 import waster.domain.entity.calendar.Schedule;
 
@@ -16,16 +15,14 @@ import java.util.List;
 
 public class BenchScheduleChartBuilder {
     double deadlineTime;
-    private BenchScheduler benchScheduler;
     private XYChart chart = defaultChart(0L);
     private int scheduleCounter = 0;
 
-    public BenchScheduleChartBuilder(double deadlineTime, BenchScheduler benchScheduler) {
-        this.deadlineTime = deadlineTime;
-        this.benchScheduler = benchScheduler;
+    public BenchScheduleChartBuilder(double limit) {
+        this.deadlineTime = limit;
     }
 
-    public void createChartForBench(Bench bench, Calendar calendar) throws IOException {
+    public XYChart getChartBytesForBench(Bench bench, Calendar calendar) throws IOException {
         chart = defaultChart(bench.getId());
         List<Schedule> schedules = calendar.getSchedule();
         for (int i = 0; i < schedules.size(); i++) {
@@ -34,8 +31,15 @@ public class BenchScheduleChartBuilder {
             addStepInGantChart(schedule, currentYStage);
         }
         addDeadlineInGantChart(schedules.size());
+        return chart;
+    }
 
-        BitmapEncoder.saveBitmapWithDPI(chart, "./benchGraph/" + bench.getId(), BitmapEncoder.BitmapFormat.PNG, 100);
+    public void saveChartInFile(XYChart chart, String pathToFile) throws IOException {
+        BitmapEncoder.saveBitmapWithDPI(chart, pathToFile, BitmapEncoder.BitmapFormat.PNG, 100);
+    }
+
+    public byte[] getChartAsByteArray(XYChart chart) throws IOException {
+        return BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG);
     }
 
     private void addStepInGantChart(Schedule schedule, int currentStage) {

@@ -5,6 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import waster.domain.entity.*;
 import waster.domain.repository.FakeMachineRepository;
+import waster.domain.repository.FakeOrderRepository;
 import waster.domain.repository.FakeProcessMapRepository;
 import waster.domain.repository.FakeSettingsRepository;
 import waster.domain.repository.abstracts.*;
@@ -21,19 +22,19 @@ public class DbInitializer implements CommandLineRunner {
     private BenchRepository benchRepository;
     private SettingsRepository settingsRepository;
     private StepRepository stepRepository;
+    private OrderRepository orderRepository;
 
 
     @Autowired
-    public DbInitializer(ArticleRepository articleRepository, ProcessMapRepository processMapRepository, MachineRepository machineRepository, BenchRepository benchRepository, SettingsRepository settingsRepository, StepRepository stepRepository) {
+    public DbInitializer(ArticleRepository articleRepository, ProcessMapRepository processMapRepository, MachineRepository machineRepository, BenchRepository benchRepository, SettingsRepository settingsRepository, StepRepository stepRepository, OrderRepository orderRepository) {
         this.articleRepository = articleRepository;
         this.processMapRepository = processMapRepository;
         this.machineRepository = machineRepository;
         this.benchRepository = benchRepository;
         this.settingsRepository = settingsRepository;
         this.stepRepository = stepRepository;
+        this.orderRepository = orderRepository;
     }
-
-
 
     @Override
     public void run(String... args) throws Exception {
@@ -43,6 +44,7 @@ public class DbInitializer implements CommandLineRunner {
         initSettings();
         initBenches();
         initStep();
+        initOrders();
     }
 
     private void initArticles() {
@@ -85,65 +87,65 @@ public class DbInitializer implements CommandLineRunner {
 
     private void initBenches() {
         List<Bench> benches = Arrays.asList(
-                createBench(-1, -1L),
-                createBench(-2, -2L),
-                createBench(10, 10L),
-                createBench(13, 10L),
-                createBench(14, 10L),
-                createBench(80, 10L),
-                createBench(81, 10L),
-                createBench(157, 10L),
-                createBench(166, 10L),
-                createBench(16, 14L),
-                createBench(34, 14L),
-                createBench(149, 14L),
-                createBench(151, 14L),
-                createBench(152, 14L),
-                createBench(40, 20L),
-                createBench(41, 21L),
-                createBench(63, 30L),
-                createBench(86, 44L),
-                createBench(87, 45L),
-                createBench(88, 45L),
-                createBench(89, 45L),
-                createBench(90, 45L),
-                createBench(91, 45L),
-                createBench(92, 45L),
-                createBench(93, 45L),
-                createBench(94, 45L),
-                createBench(95, 45L),
-                createBench(96, 45L),
-                createBench(97, 45L),
-                createBench(99, 45L),
-                createBench(98, 45L),
-                createBench(100, 45L),
-                createBench(101, 45L),
-                createBench(102, 45L),
-                createBench(103, 45l),
-                createBench(104, 45L),
-                createBench(105, 45L),
-                createBench(106, 45L),
-                createBench(107, 45L),
-                createBench(108, 45L),
-                createBench(109, 45L),
-                createBench(110, 45L),
-                createBench(111, 45L),
-                createBench(126, 56L),
-                createBench(127, 56L),
-                createBench(139, 61L),
-                createBench(140, 61L),
-                createBench(170, 61L),
-                createBench(144, 64L),
-                createBench(165, 76L),
-                createBench(168, 78L),
-                createBench(169, 79L),
-                createBench(173, 80L),
-                createBench(175, 82L)
+                createBench(-1L, -1L),
+                createBench(-2L, -2L),
+                createBench(10L, 10L),
+                createBench(13L, 10L),
+                createBench(14L, 10L),
+                createBench(80L, 10L),
+                createBench(81L, 10L),
+                createBench(157L, 10L),
+                createBench(166L, 10L),
+                createBench(16L, 14L),
+                createBench(34L, 14L),
+                createBench(149L, 14L),
+                createBench(151L, 14L),
+                createBench(152L, 14L),
+                createBench(40L, 20L),
+                createBench(41L, 21L),
+                createBench(63L, 30L),
+                createBench(86l, 44L),
+                createBench(87l, 45L),
+                createBench(88l, 45L),
+                createBench(89l, 45L),
+                createBench(90l, 45L),
+                createBench(91l, 45L),
+                createBench(92l, 45L),
+                createBench(93l, 45L),
+                createBench(94l, 45L),
+                createBench(95l, 45L),
+                createBench(96l, 45L),
+                createBench(97l, 45L),
+                createBench(99l, 45L),
+                createBench(98l, 45L),
+                createBench(100l, 45L),
+                createBench(101l, 45L),
+                createBench(102l, 45L),
+                createBench(103l, 45L),
+                createBench(104l, 45L),
+                createBench(105l, 45L),
+                createBench(106l, 45L),
+                createBench(107l, 45L),
+                createBench(108l, 45L),
+                createBench(109l, 45L),
+                createBench(110l, 45L),
+                createBench(111l, 45L),
+                createBench(126l, 56L),
+                createBench(127l, 56L),
+                createBench(139L, 61L),
+                createBench(140L, 61L),
+                createBench(170L, 61L),
+                createBench(144L, 64L),
+                createBench(165L, 76L),
+                createBench(168L, 78L),
+                createBench(169L, 79L),
+                createBench(173L, 80L),
+                createBench(175L, 82L)
         );
         benchRepository.saveAll(benches);
     }
 
-    private Bench createBench(Integer id, Long machineId) {
+    private Bench createBench(Long id, Long machineId) {
         Machine machine = machineRepository.findById(machineId).get();
         Bench bench = new Bench();
         bench.setId(id);
@@ -207,5 +209,11 @@ public class DbInitializer implements CommandLineRunner {
                 .machine(machine.get())
                 .setting(setting.orElse(null))
                 .build();
+    }
+
+    private void initOrders() {
+        List<Order> orders = FakeOrderRepository.getOrders();
+
+        orderRepository.saveAll(orders);
     }
 }

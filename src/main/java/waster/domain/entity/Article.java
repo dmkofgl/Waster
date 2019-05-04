@@ -2,10 +2,7 @@ package waster.domain.entity;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 @Entity
 @Getter
@@ -15,7 +12,6 @@ import javax.persistence.OneToOne;
 @AllArgsConstructor
 public class Article {
     @Id
-    @GeneratedValue
     private Long id;
     private String coloring;
     private String name;

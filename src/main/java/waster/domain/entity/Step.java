@@ -15,7 +15,6 @@ import javax.persistence.ManyToOne;
 @Setter
 public class Step {
     @Id
-    @GeneratedValue
     private Long id;
     @ManyToOne
     private Machine machine;

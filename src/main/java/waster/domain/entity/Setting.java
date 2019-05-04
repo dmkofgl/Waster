@@ -16,7 +16,7 @@ public class Setting {
     */
     @Id
     private Long id;
-    private Long workingTime;
+    private Double workingSpeed;
     private Long prepareTime;
-    private Boolean timeDependOLength = true;
+    private Boolean timeDependOnLength = true;
 }

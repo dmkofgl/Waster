@@ -1,11 +1,12 @@
 package waster.domain.service.impl;
 
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.springframework.stereotype.Service;
 import waster.domain.entity.ProcessMap;
 import waster.domain.service.ProcessMapService;
 
 import java.util.List;
-
+@Service
 public class ProcessMapServiceImpl implements ProcessMapService {
     @Override
     public List<Long> getShortestPath(ProcessMap processMap) {

@@ -1,13 +1,18 @@
 package waster.domain.entity;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import java.util.List;
+
 @Entity
 @Getter
 @Setter
+@EqualsAndHashCode(of = {"numberNew"})
 public class Machine {
     @Id
     private Long numberNew;
@@ -16,8 +21,4 @@ public class Machine {
     @OneToMany
     private List<Setting> setting;
 
-    @Override
-    public boolean equals(Object obj) {
-        return ((Machine) obj).getNumberNew().equals(this.numberNew);
-    }
 }
