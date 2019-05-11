@@ -14,11 +14,12 @@ import waster.domain.repository.BenchAndMachineRepository;
 import waster.domain.repository.abstracts.StepRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.ProcessMapService;
+import waster.math.GeneticShaffle;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class BenchScheduleServiceImpl implements BenchScheduleService {
@@ -38,42 +39,11 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
 
     @Override
     public BenchScheduler findOptimalBenchSchedule(Long limitTimeInHours, List<Order> orderList) {
-        List<BenchScheduler> benchSchedulers = new ArrayList<>();
-        BenchScheduler benchScheduler = calculateScheduleForBenchesForOrders(limitTimeInHours, orderList);
-        benchSchedulers.add(benchScheduler);
-        for (int i = 0; i < 4; i++) {
-            benchSchedulers.add(calculateScheduleForBenchesForOrders(limitTimeInHours, shuffleOrders(orderList)));
-        }
-        if (getOverworkedBenches(benchScheduler).size() == 0) {
-
-        }
-        List<BenchScheduler> nextBenchSchedulers = benchSchedulers.stream()
-                .sorted(Comparator.comparingLong(this::findMaxWorkingTime))
-                .limit(3)
-                .collect(Collectors.toList());
-
-        return benchScheduler;
+        GeneticShaffle geneticShaffle = new GeneticShaffle();
+        geneticShaffle.setBenchScheduleService(this);
+        return geneticShaffle.findOptimalBenchScheduler(limitTimeInHours, orderList);
     }
 
-    private Long findMaxWorkingTime(BenchScheduler benchScheduler) {
-        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
-        Set<Bench> benches = benchCalendarMap.keySet();
-        Long maxTime = 0L;
-        for (Bench bench : benches) {
-            Calendar calendar = benchCalendarMap.get(bench);
-            maxTime = calendar.lastActionEndTime() > maxTime
-                    ? calendar.lastActionEndTime()
-                    : maxTime;
-        }
-        return maxTime;
-    }
-
-    private List<Order> shuffleOrders(List<Order> sourceOrders) {
-        List<Order> orders = new ArrayList<>(sourceOrders);
-        Collections.shuffle(orders);
-        return orders;
-
-    }
 
     private void fillBenchSchedulerWithOrder(BenchScheduler benchScheduler, Order order) {
         Article article = order.getArticle();
@@ -86,7 +56,6 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
                 .map(stepId -> buildOperation(stepId, initDate, operationName, order.getLength()))
                 .forEach(operation -> addOperationInBenchScheduler(benchScheduler, operation));
     }
-
 
     private Operation buildOperation(Long stepId, Long initDate, String name, Double length) {
         Step step = stepRepository.findById(stepId).orElseThrow(RuntimeException::new);
@@ -102,9 +71,77 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
                 .build();
     }
 
+
+    @Override
+    public BenchScheduler addOperationInBenchScheduler(BenchScheduler benchScheduler, Operation operation) {
+        //TODO RENAME IT
+        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
+
+        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
+        //if there is only one bench then min() doesn't called
+        if (!benchCalendarMap.containsKey(optimalBench)) {
+            benchCalendarMap.put(optimalBench, new Calendar());
+        }
+        benchCalendarMap.get(optimalBench).applyOperation(operation);
+        return benchScheduler;
+    }
+
+    @Override
+    public Long calculateEndTimeForOperation(BenchScheduler benchScheduler, Operation operation) {
+        //TODO RENAME IT
+        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
+
+        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
+        //if there is only one bench then min() doesn't called
+        if (!benchCalendarMap.containsKey(optimalBench)) {
+            benchCalendarMap.put(optimalBench, new Calendar());
+        }
+        return benchCalendarMap.get(optimalBench).calculateStartTimeForOperation(operation);
+    }
+
+    private Bench getOptimalBenchForExecuteOperation(Operation operation, Map<Bench, Calendar> benchCalendarMap) {
+        final int SMALLER = -1, EQUALS = 0, MORE = 1;
+        MultiValueMap<Machine, Bench> bindMap = new BenchAndMachineRepository().getBindMap();
+        Machine machine = operation.getStep().getMachine();
+        //достать все машины данного типа
+        List<Bench> benches = bindMap.get(machine);
+        return benches.stream().min((x, y) -> {
+            if (!(benchCalendarMap.containsKey(x) || benchCalendarMap.containsKey(x))) {
+                return EQUALS;
+            }
+            if (!benchCalendarMap.containsKey(x)) {
+                return MORE;
+            }
+            if (!benchCalendarMap.containsKey(y)) {
+                return SMALLER;
+            }
+            Calendar calendarPrev = getCalendarForBench(benchCalendarMap, x);
+            Calendar calendarNext = getCalendarForBench(benchCalendarMap, y);
+            return compareBenchesStartTimeToOperation(calendarPrev, calendarNext, operation);
+        }).get();
+    }
+
+
+    //TODO CHANGE IT
+    private Calendar getCalendarForBench(Map<Bench, Calendar> benchCalendarMap, Bench bench) {
+        if (!benchCalendarMap.containsKey(bench)) {
+            benchCalendarMap.put(bench, new Calendar());
+        }
+        return benchCalendarMap.get(bench);
+    }
+
+    // Compare equals benches which can start earlier
+    private int compareBenchesStartTimeToOperation(Calendar calendarPrev, Calendar calendarNext, Operation operation) {
+        Long startSchedulePrev = calendarPrev.calculateStartTimeForOperation(operation);
+        Long startScheduleNext = calendarNext.calculateStartTimeForOperation(operation);
+        return Long.compare(startSchedulePrev, startScheduleNext);
+    }
+
     @Override
     public void outputInExcelFile(BenchScheduler benchScheduler) throws IOException {
-        final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + "testing.xlsx";
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
+        final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + dateFormat.format(date) + ".xlsx";
         this.outputInExcelFile(EXCEL_FILE_LOCATION, benchScheduler);
     }
 
@@ -144,57 +181,6 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
             benchScheduleChartBuilder.saveChartInFile(chart, "./benchGraph/" + bench.getId());
         }
 
-    }
-
-    @Override
-    public BenchScheduler addOperationInBenchScheduler(BenchScheduler benchScheduler, Operation operation) {
-        //TODO REMOVE IT
-        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
-
-        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
-        //if there is only one bench then min() doesn't called
-        if (!benchCalendarMap.containsKey(optimalBench)) {
-            benchCalendarMap.put(optimalBench, new Calendar());
-        }
-        benchCalendarMap.get(optimalBench).applyOperation(operation);
-        return benchScheduler;
-    }
-
-    private Bench getOptimalBenchForExecuteOperation(Operation operation, Map<Bench, Calendar> benchCalendarMap) {
-        MultiValueMap<Machine, Bench> bindMap = new BenchAndMachineRepository().getBindMap();
-        Machine machine = operation.getStep().getMachine();
-        //достать все машины данного типа
-        List<Bench> benches = bindMap.get(machine);
-        return benches.stream().min((x, y) -> {
-            if (!(benchCalendarMap.containsKey(x) || benchCalendarMap.containsKey(x))) {
-                return 0;
-            }
-            if (!benchCalendarMap.containsKey(x)) {
-                return 1;
-            }
-            if (!benchCalendarMap.containsKey(y)) {
-                return -1;
-            }
-            Calendar calendarPrev = getCalendarForBench(benchCalendarMap, x);
-            Calendar calendarNext = getCalendarForBench(benchCalendarMap, y);
-            return compareBenchesStartTimeToOperation(calendarPrev, calendarNext, operation);
-        }).get();
-    }
-
-
-    //TODO CHANGE IT
-    private Calendar getCalendarForBench(Map<Bench, Calendar> benchCalendarMap, Bench bench) {
-        if (!benchCalendarMap.containsKey(bench)) {
-            benchCalendarMap.put(bench, new Calendar());
-        }
-        return benchCalendarMap.get(bench);
-    }
-
-    // Compare equals benches which can start earlier
-    private int compareBenchesStartTimeToOperation(Calendar calendarPrev, Calendar calendarNext, Operation operation) {
-        Long startSchedulePrev = calendarPrev.calculateStartTimeForOperation(operation);
-        Long startScheduleNext = calendarNext.calculateStartTimeForOperation(operation);
-        return Long.compare(startSchedulePrev, startScheduleNext);
     }
 
     public Collection<Bench> getOverworkedBenches(BenchScheduler benchScheduler) {

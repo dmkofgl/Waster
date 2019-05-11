@@ -8,7 +8,7 @@ import waster.domain.entity.Machine;
 public class BenchAndMachineRepository {
     private static MultiValueMap<Machine, Bench> bindMap = new LinkedMultiValueMap<>();
 
-    public void bindBenchAndMachine(Machine machine, Bench bench) {
+    public static void bindBenchAndMachine(Machine machine, Bench bench) {
         bindMap.add(machine, bench);
     }
 

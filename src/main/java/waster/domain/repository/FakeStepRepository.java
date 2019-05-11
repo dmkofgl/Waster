@@ -47,7 +47,8 @@ public class FakeStepRepository  {
             createStep(25L, "", machineRepository.getMachinesById(76L), settingsRepository.getSettingById(247L)),
             createStep(26L, "", machineRepository.getMachinesById(10L), settingsRepository.getSettingById(252L)),
             createStep(27L, "", machineRepository.getMachinesById(44L), settingsRepository.getSettingById(253L)),
-            createStep(28L, "", machineRepository.getMachinesById(45L), settingsRepository.getSettingById(258L))
+            createStep(28L, "", machineRepository.getMachinesById(45L), settingsRepository.getSettingById(258L)),
+            createStep(29L, "", machineRepository.getMachinesById(14L), settingsRepository.getSettingById(253L))
 
     );
 

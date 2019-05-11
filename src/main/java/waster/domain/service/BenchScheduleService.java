@@ -1,10 +1,12 @@
 package waster.domain.service;
 
+import waster.domain.entity.Bench;
 import waster.domain.entity.BenchScheduler;
 import waster.domain.entity.Order;
 import waster.domain.entity.calendar.Operation;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 public interface BenchScheduleService {
@@ -12,6 +14,8 @@ public interface BenchScheduleService {
     BenchScheduler calculateScheduleForBenchesForOrders(Long limitTimeInHours, Iterable<Order> orderList);
 
     BenchScheduler findOptimalBenchSchedule(Long limitTimeInHours, List<Order> orderList);
+
+    Long calculateEndTimeForOperation(BenchScheduler benchScheduler, Operation operation);
 
     void outputInExcelFile(BenchScheduler benchScheduler) throws IOException;
 
@@ -23,4 +27,6 @@ public interface BenchScheduleService {
     void outputAsPicture(Double deadlineTime, BenchScheduler benchScheduler) throws IOException;
 
     BenchScheduler addOperationInBenchScheduler(BenchScheduler benchScheduler, Operation operation);
+
+    Collection<Bench> getOverworkedBenches(BenchScheduler benchScheduler);
 }

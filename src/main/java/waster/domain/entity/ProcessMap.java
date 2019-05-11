@@ -6,7 +6,6 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import waster.domain.helper.GraphConverter;
-import waster.domain.repository.FakeStepRepository;
 
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -17,7 +16,6 @@ import javax.persistence.Lob;
 @Getter
 @Setter
 public class ProcessMap {
-    private static FakeStepRepository fakeStepRepository = new FakeStepRepository();
     @Id
     private Long articleId;
     @Lob
@@ -33,13 +31,13 @@ public class ProcessMap {
     public void addStart(Long id) {
         addVertex(-1L);
         addVertex(id);
-        addEdge(-1L, id);
+        addEdge(-1L, id, 0.0);
     }
 
     public void addLast(Long id) {
         addVertex(-2L);
         addVertex(id);
-        addEdge(id, -2L);
+        addEdge(id, -2L, 0.0);
     }
 
     public void addVertex(Long stepId) {
@@ -47,8 +45,8 @@ public class ProcessMap {
         graph.addVertex(stepId);
     }
 
-    public void addEdge(Long stepSourceId, Long stepTargetId) {
+    public void addEdge(Long stepSourceId, Long stepTargetId, Double weight) {
         graph.addEdge(stepSourceId, stepTargetId);
-        graph.setEdgeWeight(stepSourceId, stepTargetId, fakeStepRepository.getById(stepSourceId).getSetting().getWorkingTime());
+        graph.setEdgeWeight(stepSourceId, stepTargetId, weight);
     }
 }

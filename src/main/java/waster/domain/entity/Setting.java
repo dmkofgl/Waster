@@ -18,5 +18,5 @@ public class Setting {
     private Long id;
     private Double workingSpeed;
     private Long prepareTime;
-    private Boolean timeDependOnLength = true;
+    private boolean timeDependOnLength = true;
 }

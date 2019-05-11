@@ -57,9 +57,9 @@ public class Calendar {
     //TODO проверить , если начинается раньше и заканчивается раньше end но позже start
     private boolean engagedInitial(Schedule existSchedule, Schedule newSchedule) {
         Long startA = existSchedule.getStart();
-        Long endA = existSchedule.getStart();
+        Long endA = existSchedule.getEnd();
         Long startB = newSchedule.getStart();
-        Long endB = newSchedule.getStart();
+        Long endB = newSchedule.getEnd();
 
         return (startA > startB ? startA : startB) <= (endA < endB ? endA : endB);
     }

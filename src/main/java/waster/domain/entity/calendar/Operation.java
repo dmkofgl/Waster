@@ -17,10 +17,10 @@ public class Operation {
     public Long getTime() {
         Long result = 0L;
         Setting setting = step.getSetting();
-        if (setting.getTimeDependOnLength()) {
-            result = Double.valueOf(length / setting.getWorkingSpeed() + setting.getPrepareTime()).longValue();
+        if (setting.isTimeDependOnLength()) {
+            result = Double.valueOf(length / setting.getWorkingSpeed()).longValue() + setting.getPrepareTime();
         } else {
-            result = Double.valueOf(setting.getWorkingSpeed() + setting.getPrepareTime()).longValue();
+            result = setting.getWorkingSpeed().longValue() + setting.getPrepareTime();
         }
         return result;
     }

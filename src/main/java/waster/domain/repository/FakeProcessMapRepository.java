@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class FakeProcessMapRepository  {
+
+public class FakeProcessMapRepository {
+    private static FakeStepRepository fakeStepRepository = new FakeStepRepository();
     public static List<ProcessMap> processMaps = Arrays.asList(
             createProcessMap1(),
             createProcessMap2(),
@@ -35,20 +37,21 @@ public class FakeProcessMapRepository  {
         processMap.addVertex(10L);
         processMap.addLast((11L));
 
-        processMap.addEdge((0L), (1L));
-        processMap.addEdge((1L), (2L));
-        processMap.addEdge((2L), (3L));
-        processMap.addEdge((3L), (4L));
-        processMap.addEdge((3L), (5L));
-        processMap.addEdge((4L), (6L));
-        processMap.addEdge((5L), (6L));
-        processMap.addEdge((6L), (7L));
-        processMap.addEdge((6L), (8L));
-        processMap.addEdge((6L), (9L));
-        processMap.addEdge((7L), (10L));
-        processMap.addEdge((8L), (10L));
-        processMap.addEdge((9L), (10L));
-        processMap.addEdge((10L), (11L));
+        addEdge(processMap,(0L), (1L));
+        addEdge(processMap,(1L), (2L));
+        addEdge(processMap,(2L), (3L));
+        addEdge(processMap,(3L), (4L));
+        addEdge(processMap,(3L), (5L));
+        addEdge(processMap,(4L), (6L));
+        addEdge(processMap,(5L), (6L));
+        addEdge(processMap,(6L), (7L));
+        addEdge(processMap,(6L), (9L));
+        addEdge(processMap,(6L), (8L));
+        addEdge(processMap,(7L), (10L));
+        addEdge(processMap,(8L), (10L));
+        addEdge(processMap,(9L), (10L));
+        addEdge(processMap,(10L), (11L));
+
 
         return processMap;
     }
@@ -69,20 +72,20 @@ public class FakeProcessMapRepository  {
         processMap.addVertex(10L);
         processMap.addLast((11L));
 
-        processMap.addEdge((0L), (1L));
-        processMap.addEdge((1L), (2L));
-        processMap.addEdge((2L), (3L));
-        processMap.addEdge((3L), (4L));
-        processMap.addEdge((3L), (5L));
-        processMap.addEdge((4L), (6L));
-        processMap.addEdge((5L), (6L));
-        processMap.addEdge((6L), (7L));
-        processMap.addEdge((6L), (8L));
-        processMap.addEdge((6L), (9L));
-        processMap.addEdge((7L), (10L));
-        processMap.addEdge((8L), (10L));
-        processMap.addEdge((9L), (10L));
-        processMap.addEdge((10L), (11L));
+        addEdge(processMap,(0L), (1L));
+        addEdge(processMap,(1L), (2L));
+        addEdge(processMap,(2L), (3L));
+        addEdge(processMap,(3L), (4L));
+        addEdge(processMap,(3L), (5L));
+        addEdge(processMap,(4L), (6L));
+        addEdge(processMap,(5L), (6L));
+        addEdge(processMap,(6L), (7L));
+        addEdge(processMap,(6L), (9L));
+        addEdge(processMap,(6L), (8L));
+        addEdge(processMap,(7L), (10L));
+        addEdge(processMap,(8L), (10L));
+        addEdge(processMap,(9L), (10L));
+        addEdge(processMap,(10L), (11L));
 
         return processMap;
     }
@@ -93,14 +96,20 @@ public class FakeProcessMapRepository  {
         processMap.addStart(16L);
         processMap.addVertex(17L);
         processMap.addVertex(13L);
+        processMap.addVertex(18L);
         processMap.addVertex((14L));
+        processMap.addVertex((29L));
         processMap.addLast((15L));
 
-        processMap.addEdge((16L), (17L));
-        processMap.addEdge((17L), (13L));
-        processMap.addEdge((13L), (16L));
-        processMap.addEdge((16L), (14L));
-        processMap.addEdge((14L), (15L));
+        addEdge(processMap,(16L), (17L));
+        addEdge(processMap,(17L), (18L));
+        addEdge(processMap,(17L), (16L));
+        addEdge(processMap,(16L), (14L));
+        addEdge(processMap,(17L), (29L));
+        addEdge(processMap,(29L), (14L));
+        addEdge(processMap,(18L), (14L));
+        addEdge(processMap,(14L), (15L));
+
 
         return processMap;
     }
@@ -116,11 +125,11 @@ public class FakeProcessMapRepository  {
         processMap.addVertex((14L));
         processMap.addLast((15L));
 
-        processMap.addEdge((18L), (19L));
-        processMap.addEdge((19L), (20L));
-        processMap.addEdge((20L), (13L));
-        processMap.addEdge((13L), (14L));
-        processMap.addEdge((14L), (15L));
+        addEdge(processMap,(18L), (19L));
+        addEdge(processMap,(19L), (20L));
+        addEdge(processMap,(20L), (13L));
+        addEdge(processMap,(13L), (14L));
+        addEdge(processMap,(14L), (15L));
 
         return processMap;
     }
@@ -133,30 +142,34 @@ public class FakeProcessMapRepository  {
         processMap.addVertex((14L));
         processMap.addLast((15L));
 
-        processMap.addEdge((18L), (13L));
-        processMap.addEdge((13L), (14L));
-        processMap.addEdge((14L), (15L));
+        addEdge(processMap,(18L), (13L));
+        addEdge(processMap,(13L), (14L));
+        addEdge(processMap,(14L), (15L));
 
         return processMap;
     }
+
     private static ProcessMap createProcessMap6() {
         ProcessMap processMap = new ProcessMap();
         processMap.setArticleId(6L);
 
         return processMap;
     }
+
     private static ProcessMap createProcessMap0() {
         ProcessMap processMap = new ProcessMap();
         processMap.setArticleId(0L);
 
         return processMap;
     }
+
     private static ProcessMap createProcessMap7() {
         ProcessMap processMap = new ProcessMap();
         processMap.setArticleId(7L);
 
         return processMap;
     }
+
     private static ProcessMap createProcessMap8() {
         ProcessMap processMap = new ProcessMap();
         processMap.setArticleId(8L);
@@ -166,5 +179,9 @@ public class FakeProcessMapRepository  {
 
     public Optional<ProcessMap> getByArticleId(Long id) {
         return processMaps.stream().filter(x -> x.getArticleId().equals(id)).findFirst();
+    }
+
+    private static void addEdge(ProcessMap processMap, Long source, Long target) {
+        processMap.addEdge(source, target, fakeStepRepository.getById(source).getSetting().getWorkingSpeed());
     }
 }

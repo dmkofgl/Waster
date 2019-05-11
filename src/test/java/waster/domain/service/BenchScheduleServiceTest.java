@@ -65,7 +65,7 @@ public class BenchScheduleServiceTest {
             Double length = min + (max - min) * random.nextDouble();
             orders.add(createOrder(3L, length));
         }
-  BenchScheduler benchScheduler=      benchScheduleService.findOptimalBenchSchedule(LIMIT, orders);
+        BenchScheduler benchScheduler = benchScheduleService.findOptimalBenchSchedule(LIMIT, orders);
         benchScheduleService.outputInExcelFile(benchScheduler);
 
     }

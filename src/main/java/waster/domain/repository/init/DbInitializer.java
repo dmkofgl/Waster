@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import waster.domain.entity.*;
-import waster.domain.repository.FakeMachineRepository;
-import waster.domain.repository.FakeOrderRepository;
-import waster.domain.repository.FakeProcessMapRepository;
-import waster.domain.repository.FakeSettingsRepository;
+import waster.domain.repository.*;
 import waster.domain.repository.abstracts.*;
 
 import java.util.Arrays;
@@ -150,6 +147,8 @@ public class DbInitializer implements CommandLineRunner {
         Bench bench = new Bench();
         bench.setId(id);
         bench.setMachine(machine);
+
+        BenchAndMachineRepository.bindBenchAndMachine(machine,bench);
         return bench;
     }
 

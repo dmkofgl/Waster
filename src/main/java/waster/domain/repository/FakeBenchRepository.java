@@ -44,7 +44,7 @@ public class FakeBenchRepository {
             createBench(100L, 45L),
             createBench(101L, 45L),
             createBench(102L, 45L),
-            createBench(103L, 45l),
+            createBench(103L, 45L),
             createBench(104L, 45L),
             createBench(105L, 45L),
             createBench(106L, 45L),
