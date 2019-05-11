@@ -44,7 +44,7 @@ public class Calendar {
 
     private void reflexiveFindTime(Schedule newTask) {
         Optional<Schedule> optionalSchedule = schedule.stream()
-                .filter(schedule -> engagedInitial(schedule, newTask))
+                .filter(schedule -> isNotOverlap(schedule, newTask))
                 .findFirst();
         if (optionalSchedule.isPresent()) {
             Schedule engaged = optionalSchedule.get();
@@ -53,15 +53,22 @@ public class Calendar {
         }
     }
 
-
-    //TODO проверить , если начинается раньше и заканчивается раньше end но позже start
-    private boolean engagedInitial(Schedule existSchedule, Schedule newSchedule) {
+    //TODO WTF???
+    private boolean isNotOverlap(Schedule existSchedule, Schedule newSchedule) {
         Long startA = existSchedule.getStart();
-        Long endA = existSchedule.getEnd();
+        Long endA = existSchedule.getStart();
         Long startB = newSchedule.getStart();
-        Long endB = newSchedule.getEnd();
+        Long endB = newSchedule.getStart();
 
-        return (startA > startB ? startA : startB) <= (endA < endB ? endA : endB);
+        return (max(startA, startB) <= min(endA, endB));
+    }
+
+    private Long max(Long a, Long b) {
+        return a > b ? a : b;
+    }
+
+    private Long min(Long a, Long b) {
+        return a < b ? a : b;
     }
 
     public Long lastActionEndTime() {
