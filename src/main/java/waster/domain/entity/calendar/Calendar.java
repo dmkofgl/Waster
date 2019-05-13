@@ -10,22 +10,22 @@ import java.util.Optional;
 public class Calendar {
     public static Date START_DATE = new Date();
     @Getter
-    private List<Schedule> schedule = new ArrayList<>();
+    private List<Schedule> schedules = new ArrayList<>();
 
     public void addOperation(Operation operation) {
         Schedule newTask = applyOperation(operation);
-        schedule.add(newTask);
+        schedules.add(newTask);
     }
 
     @Deprecated
     public void addSchedule(Schedule newSchedule) {
-        schedule.add(newSchedule);
+        schedules.add(newSchedule);
     }
 
     public Schedule applyOperation(Operation operation) {
         operation.setInitialStartDate(calculateStartTimeForOperation(operation));
         Schedule newTask = new Schedule(operation);
-        schedule.add(newTask);
+        schedules.add(newTask);
 
         return newTask;
     }
@@ -43,24 +43,24 @@ public class Calendar {
     }
 
     private void reflexiveFindTime(Schedule newTask) {
-        Optional<Schedule> optionalSchedule = schedule.stream()
-                .filter(schedule -> isNotOverlap(schedule, newTask))
+        Optional<Schedule> optionalSchedule = schedules.stream()
+                .filter(schedule -> isOverlap(schedule, newTask))
                 .findFirst();
         if (optionalSchedule.isPresent()) {
             Schedule engaged = optionalSchedule.get();
-            newTask.setStart(engaged.getEnd());
+            newTask.setStart(engaged.getEnd()+1);
             reflexiveFindTime(newTask);
         }
     }
 
     //TODO WTF???
-    private boolean isNotOverlap(Schedule existSchedule, Schedule newSchedule) {
+    private boolean isOverlap(Schedule existSchedule, Schedule newSchedule) {
         Long startA = existSchedule.getStart();
-        Long endA = existSchedule.getStart();
+        Long endA = existSchedule.getEnd();
         Long startB = newSchedule.getStart();
-        Long endB = newSchedule.getStart();
+        Long endB = newSchedule.getEnd();
 
-        return (max(startA, startB) <= min(endA, endB));
+        return max(startA, startB) <= min(endA, endB);
     }
 
     private Long max(Long a, Long b) {
@@ -72,7 +72,7 @@ public class Calendar {
     }
 
     public Long lastActionEndTime() {
-        return schedule.stream()
+        return schedules.stream()
                 .map(Schedule::getEnd)
                 .max(Long::compareTo)
                 .orElse(0L);

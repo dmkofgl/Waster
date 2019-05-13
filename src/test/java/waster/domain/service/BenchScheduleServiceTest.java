@@ -12,6 +12,7 @@ import waster.domain.entity.calendar.Operation;
 import waster.domain.repository.abstracts.ArticleRepository;
 import waster.domain.repository.abstracts.OrderRepository;
 import waster.domain.repository.abstracts.StepRepository;
+import waster.math.geneticShuffle;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ public class BenchScheduleServiceTest {
             orders.add(createOrder(3L, length));
         }
         BenchScheduler benchScheduler = benchScheduleService.findOptimalBenchSchedule(LIMIT, orders);
+
         benchScheduleService.outputInExcelFile(benchScheduler);
 
     }

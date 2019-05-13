@@ -20,6 +20,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 //TODO replace this method in service class
 @RunWith(SpringRunner.class)
@@ -62,5 +65,17 @@ public class GraphOutputTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void tryFlatMap() {
+        // Creating a List of Strings
+        List<String> list = Arrays.asList("Geeks", "GFG",
+                "GeeksforGeeks", "gfg");
+
+        // Using Stream flatMap(Function mapper)
+        list.stream().flatMap(str ->
+                Stream.of(str.toCharArray())).
+                forEach(System.out::println);
     }
 }

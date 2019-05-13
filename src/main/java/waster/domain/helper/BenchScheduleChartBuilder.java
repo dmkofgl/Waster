@@ -24,7 +24,7 @@ public class BenchScheduleChartBuilder {
 
     public XYChart getChartBytesForBench(Bench bench, Calendar calendar) throws IOException {
         chart = defaultChart(bench.getId());
-        List<Schedule> schedules = calendar.getSchedule();
+        List<Schedule> schedules = calendar.getSchedules();
         for (int i = 0; i < schedules.size(); i++) {
             Schedule schedule = schedules.get(i);
             int currentYStage = schedules.size() - i;

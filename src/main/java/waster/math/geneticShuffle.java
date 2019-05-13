@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class GeneticShaffle {
+public class geneticShuffle {
     //TODO UGLY
     private BenchScheduleService benchScheduleService;
     private int maxGenerationCont = 20;
@@ -38,19 +38,22 @@ public class GeneticShaffle {
     }
 
     private Map<MapListKey, BenchScheduler> findOptimalMap(Long limitTimeInHours, List<Order> orderList) {
-        Map<MapListKey, BenchScheduler> prevGeneration = calculateGeneration(limitTimeInHours, orderList);
+        Map<MapListKey, BenchScheduler> prevGeneration = executeGeneration(limitTimeInHours, orderList);
         for (int i = 0; i < maxGenerationCont; i++) {
             Map<MapListKey, BenchScheduler> nextGeneration = calculateNextGeneration(limitTimeInHours, crossover(prevGeneration));
             //if optimal gens are equals then you don't calculate more optimal result
             if (getSomeOptimal(prevGeneration).equals((getSomeOptimal(nextGeneration)))) {
                 break;
             }
+            prevGeneration.entrySet()
+                    .stream()
+                    .forEach(es -> System.out.println(findMaxWorkingTime(es.getValue())));
             prevGeneration = nextGeneration;
         }
         return prevGeneration;
     }
 
-    private Map<MapListKey, BenchScheduler> calculateGeneration(Long limitTimeInHours, List<Order> orderList) {
+    private Map<MapListKey, BenchScheduler> executeGeneration(Long limitTimeInHours, List<Order> orderList) {
         final int genCount = 5;
         Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
         orderBenchSchedulerMap.put(new MapListKey(orderList), benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInHours, orderList));
@@ -74,10 +77,6 @@ public class GeneticShaffle {
             for (int j = i; j < prevOptimalGeneration.size(); j++) {
                 MapListKey temp = halfCombineOrders(prevOptimalGeneration.get(i), prevOptimalGeneration.get(j));
                 nextGeneration.add(temp);
-                System.out.println("################CALCULATE ##################");
-                System.out.println("i: " + i);
-                System.out.println("j: " + j);
-                System.out.println("size: " + prevOptimalGeneration.size());
             }
         }
         return nextGeneration;
@@ -125,7 +124,7 @@ public class GeneticShaffle {
         return new MapListKey(result);
     }
 
-    private Long findMaxWorkingTime(BenchScheduler benchScheduler) {
+    public Long findMaxWorkingTime(BenchScheduler benchScheduler) {
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         Set<Bench> benches = benchCalendarMap.keySet();
         Long maxTime = 0L;

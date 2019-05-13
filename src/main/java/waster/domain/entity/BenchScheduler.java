@@ -1,6 +1,7 @@
 package waster.domain.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 import waster.domain.entity.calendar.Calendar;
 
 import java.util.HashMap;

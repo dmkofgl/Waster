@@ -14,7 +14,7 @@ import waster.domain.repository.BenchAndMachineRepository;
 import waster.domain.repository.abstracts.StepRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.ProcessMapService;
-import waster.math.GeneticShaffle;
+import waster.math.geneticShuffle;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,9 +39,9 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
 
     @Override
     public BenchScheduler findOptimalBenchSchedule(Long limitTimeInHours, List<Order> orderList) {
-        GeneticShaffle geneticShaffle = new GeneticShaffle();
-        geneticShaffle.setBenchScheduleService(this);
-        return geneticShaffle.findOptimalBenchScheduler(limitTimeInHours, orderList);
+        geneticShuffle geneticShuffle = new geneticShuffle();
+        geneticShuffle.setBenchScheduleService(this);
+        return geneticShuffle.findOptimalBenchScheduler(limitTimeInHours, orderList);
     }
 
 

@@ -48,7 +48,7 @@ public class BenchScheduleExcelFileBuilder {
         benchArrayList.sort((x, y) -> (int) (x.getId() - y.getId()));
         for (Bench bench : benchArrayList) {
             Calendar calendar = benchCalendarMap.get(bench);
-            List<Schedule> schedules = calendar.getSchedule();
+            List<Schedule> schedules = calendar.getSchedules();
             Boolean isFirst = true;
             for (Schedule schedule : schedules) {
                 Row row = sheet.createRow(counter++);
@@ -94,7 +94,7 @@ public class BenchScheduleExcelFileBuilder {
         int counter = 0;
         createRow(sheet, counter++, "Артикул", "Время начала", "Длительность");
 
-        List<Schedule> schedules = calendar.getSchedule();
+        List<Schedule> schedules = calendar.getSchedules();
 
         for (Schedule schedule : schedules) {
             createNumRow(sheet, counter++, schedule.getOperation().getStep().getName(), schedule.getStart(), schedule.getEnd() - schedule.getStart());
