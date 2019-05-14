@@ -47,14 +47,17 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
 
     private void fillBenchSchedulerWithOrder(BenchScheduler benchScheduler, Order order) {
         Article article = order.getArticle();
-        Long initDate = 0L;
         String operationName = article.getName() + article.getColoring();
         ProcessMap processMap = article.getProcessMap();
 
-        processMapService.getShortestPath(processMap)
-                .stream()
-                .map(stepId -> buildOperation(stepId, initDate, operationName, order.getLength()))
-                .forEach(operation -> addOperationInBenchScheduler(benchScheduler, operation));
+        List<Long> operationsIds = new ArrayList<>(processMapService.getShortestPath(processMap));
+        long prevOperationStartDate = 0;
+        for (Long stepId : operationsIds) {
+            Operation operation = buildOperation(stepId, prevOperationStartDate, operationName, order.getLength());
+            addOperationInBenchScheduler(benchScheduler, operation);
+            prevOperationStartDate = operation.getEndTime();
+        }
+
     }
 
     private Operation buildOperation(Long stepId, Long initDate, String name, Double length) {
@@ -180,7 +183,6 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
             XYChart chart = benchScheduleChartBuilder.getChartBytesForBench(bench, calendar);
             benchScheduleChartBuilder.saveChartInFile(chart, "./benchGraph/" + bench.getId());
         }
-
     }
 
     public Collection<Bench> getOverworkedBenches(BenchScheduler benchScheduler) {

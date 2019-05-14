@@ -38,18 +38,18 @@ public class Calendar {
                 .build();
 
         Schedule newTask = new Schedule(newOperation);
-        reflexiveFindTime(newTask);
+        calculateInitialStartTime(newTask);
         return newTask.getStart();
     }
 
-    private void reflexiveFindTime(Schedule newTask) {
-        Optional<Schedule> optionalSchedule = schedules.stream()
+    private void calculateInitialStartTime(Schedule newTask) {
+        Optional<Schedule> overlappedSchedule = schedules.stream()
                 .filter(schedule -> isOverlap(schedule, newTask))
                 .findFirst();
-        if (optionalSchedule.isPresent()) {
-            Schedule engaged = optionalSchedule.get();
+        if (overlappedSchedule.isPresent()) {
+            Schedule engaged = overlappedSchedule.get();
             newTask.setStart(engaged.getEnd()+1);
-            reflexiveFindTime(newTask);
+            calculateInitialStartTime(newTask);
         }
     }
 

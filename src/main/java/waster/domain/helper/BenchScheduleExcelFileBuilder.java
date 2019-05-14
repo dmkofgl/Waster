@@ -7,6 +7,7 @@ import org.apache.poi.xssf.usermodel.XSSFChart;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTCatAx;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTTitle;

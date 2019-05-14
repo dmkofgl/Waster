@@ -57,9 +57,9 @@ public class BenchScheduleServiceTest {
 
     @Test
     public void findOptimal() throws IOException {
-        final Long LIMIT = 8L * 60 * 60 * 1000;
+        final Long LIMIT = 8L * 60 * 60 * 1000*28;
         List<Order> orders = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             double min = 0;
             double max = 1 * 1000 * 60 * 60;
             Random random = new Random();

@@ -11,9 +11,7 @@ import javax.persistence.Id;
 @Getter
 @Setter
 public class Setting {
-    /*
-   Время обработки 1 погонного метра ткани
-    */
+
     @Id
     private Long id;
     private Double workingSpeed;

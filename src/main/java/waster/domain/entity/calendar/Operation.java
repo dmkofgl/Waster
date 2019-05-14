@@ -25,5 +25,9 @@ public class Operation {
         return result;
     }
 
+    public Long getEndTime() {
+        return initialStartDate + getTime();
+    }
+
 
 }

@@ -18,7 +18,7 @@ public class geneticShuffle {
     //TODO UGLY
     private BenchScheduleService benchScheduleService;
     private int maxGenerationCont = 20;
-    final int generationEntityLimit = 3;
+    final int generationEntityLimit = 5;
 
     private List<Order> shuffleOrders(List<Order> sourceOrders) {
         List<Order> orders = new ArrayList<>(sourceOrders);
@@ -54,7 +54,7 @@ public class geneticShuffle {
     }
 
     private Map<MapListKey, BenchScheduler> executeGeneration(Long limitTimeInHours, List<Order> orderList) {
-        final int genCount = 5;
+        final int genCount = 120;
         Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
         orderBenchSchedulerMap.put(new MapListKey(orderList), benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInHours, orderList));
         for (int i = 0; i < genCount - 1; i++) {
@@ -84,7 +84,7 @@ public class geneticShuffle {
 
     private List<MapListKey> getSomeOptimal(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
         return OrderBenchSchedulerMap.entrySet()
-                .stream()
+                .parallelStream()
                 .sorted(Comparator.comparingLong(es -> this.findMaxWorkingTime(es.getValue())))
                 .limit(generationEntityLimit)
                 .map(Map.Entry::getKey)
