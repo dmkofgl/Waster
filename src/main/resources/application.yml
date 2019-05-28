@@ -5,9 +5,6 @@ spring:
     username: sa
     password:
     driverClassName: org.h2.Driver
-  secondDatasource:
-    url: jdbc:dbf:/."+"/src/main/resources/data/data
-    driverClassName: com.caigen.sql.dbf.DBFDriver
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -16,8 +13,7 @@ spring:
         show_sql: true
         use_sql_comments: true
         format_sql: true
-        import_files_sql_extractor: org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
-        import_files: data/temp.cvs
+
 
 
   ###

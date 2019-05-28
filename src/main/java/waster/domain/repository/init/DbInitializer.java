@@ -11,8 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@Component
-public class DbInitializer implements CommandLineRunner {
+public class DbInitializer{
     private ArticleRepository articleRepository;
     private ProcessMapRepository processMapRepository;
     private MachineRepository machineRepository;
@@ -33,7 +32,6 @@ public class DbInitializer implements CommandLineRunner {
         this.orderRepository = orderRepository;
     }
 
-    @Override
     public void run(String... args) throws Exception {
         initProcessMap();
         initArticles();

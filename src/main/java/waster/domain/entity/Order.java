@@ -1,8 +1,6 @@
 package waster.domain.entity;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -12,6 +10,9 @@ import java.util.Date;
 @Setter
 @Table(name = "fabric_order")
 @EqualsAndHashCode(of = {"id"})
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Order {
     @Id
     @GeneratedValue
@@ -19,5 +20,5 @@ public class Order {
     @ManyToOne
     private Article article;
     private Double length;
-    private Date date;
+    private Date expireDate;
 }
