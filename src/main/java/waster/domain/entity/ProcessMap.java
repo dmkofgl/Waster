@@ -1,7 +1,6 @@
 package waster.domain.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -15,6 +14,8 @@ import javax.persistence.Lob;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class ProcessMap {
     @Id
     private Long articleId;

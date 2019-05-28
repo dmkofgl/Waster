@@ -34,6 +34,7 @@
             <artifactId>h2</artifactId>
         </dependency>
 
+
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
@@ -82,6 +83,13 @@
             <groupId>org.knowm.xchart</groupId>
             <artifactId>xchart</artifactId>
             <version>3.5.4</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.jamel.dbf</groupId>
+            <artifactId>dbf-reader</artifactId>
+            <version>0.3.0</version>
         </dependency>
     </dependencies>
     <build>
