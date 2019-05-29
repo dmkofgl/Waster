@@ -3,6 +3,7 @@ package waster.domain.service;
 import waster.domain.entity.Bench;
 import waster.domain.entity.BenchScheduler;
 import waster.domain.entity.Order;
+import waster.domain.entity.PlanReport;
 import waster.domain.entity.calendar.Operation;
 
 import java.io.IOException;
@@ -17,9 +18,9 @@ public interface BenchScheduleService {
 
     Long calculateEndTimeForOperation(BenchScheduler benchScheduler, Operation operation);
 
-    void outputInExcelFile(BenchScheduler benchScheduler) throws IOException;
+    String outputInExcelFile(BenchScheduler benchScheduler) throws IOException;
 
-    void outputInExcelFile(String pathToFile, BenchScheduler benchScheduler) throws IOException;
+    String outputInExcelFile(String pathToFile, BenchScheduler benchScheduler) throws IOException;
 
 
     void outputAsPicture(BenchScheduler benchScheduler) throws IOException;
