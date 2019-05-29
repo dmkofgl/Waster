@@ -16,8 +16,10 @@ public class Setting {
     @Id
     private Long id;
     private Double workingSpeed;
-    private Long prepareTime;
+    @Builder.Default
+    private Long prepareTime = 15 * 60 * 1000L;
     private boolean timeDependOnLength = true;
     @ManyToOne
     private Machine machine;
+
 }

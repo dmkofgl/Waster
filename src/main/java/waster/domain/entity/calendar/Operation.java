@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import waster.domain.entity.Setting;
-import waster.domain.entity.Step;
 
 @Builder
 @Getter
@@ -12,11 +11,10 @@ import waster.domain.entity.Step;
 public class Operation {
     private Double length;
     private Long initialStartDate;
-    private Step step;
+    private Setting setting;
 
     public Long getTime() {
-        Long result = 0L;
-        Setting setting = step.getSetting();
+        Long result;
         if (setting.isTimeDependOnLength()) {
             result = Double.valueOf(length / setting.getWorkingSpeed()).longValue() + setting.getPrepareTime();
         } else {

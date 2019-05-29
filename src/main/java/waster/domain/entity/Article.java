@@ -16,7 +16,7 @@ public class Article {
     private Long id;
     private String coloring;
     private String name;
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     private ProcessMap processMap;
 
 }

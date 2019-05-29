@@ -7,7 +7,6 @@ import org.apache.poi.xssf.usermodel.XSSFChart;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTCatAx;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTTitle;
@@ -62,7 +61,8 @@ public class BenchScheduleExcelFileBuilder {
                 c1.setCellValue(schedule.getOperation().getLength());
 
                 Cell c2 = row.createCell(2);
-                c2.setCellValue(schedule.getOperation().getStep().getName());
+                //TODO use real name
+                c2.setCellValue(schedule.getOperation().getSetting().toString());
 
                 Cell c3 = row.createCell(3);
                 Date date = new Date(startDate.getTime() + schedule.getStart());
@@ -98,7 +98,7 @@ public class BenchScheduleExcelFileBuilder {
         List<Schedule> schedules = calendar.getSchedules();
 
         for (Schedule schedule : schedules) {
-            createNumRow(sheet, counter++, schedule.getOperation().getStep().getName(), schedule.getStart(), schedule.getEnd() - schedule.getStart());
+            createNumRow(sheet, counter++, schedule.getOperation().getSetting().toString(), schedule.getStart(), schedule.getEnd() - schedule.getStart());
         }
         try {
             createChart(sheet, bench, calendar, limit);

@@ -34,7 +34,7 @@ public class Calendar {
         Operation newOperation = Operation.builder()
                 .initialStartDate(operation.getInitialStartDate())
                 .length(operation.getLength())
-                .step(operation.getStep())
+                .setting(operation.getSetting())
                 .build();
 
         Schedule newTask = new Schedule(newOperation);

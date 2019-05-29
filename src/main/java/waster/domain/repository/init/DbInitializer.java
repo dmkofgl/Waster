@@ -203,7 +203,6 @@ public class DbInitializer{
         return Step.builder()
                 .id(id)
                 .name(name)
-                .machine(machine.get())
                 .setting(setting.orElse(null))
                 .build();
     }

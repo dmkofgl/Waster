@@ -56,7 +56,7 @@ public class FakeStepRepository  {
         return Step.builder()
                 .id(id)
                 .name(name)
-                .machine(machine)
+//                .machine(machine)
                 .setting(setting)
                 .build();
     }

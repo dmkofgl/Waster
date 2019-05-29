@@ -17,7 +17,7 @@ public class Order {
     @Id
     @GeneratedValue
     private Long id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Article article;
     private Double length;
     private Date expireDate;

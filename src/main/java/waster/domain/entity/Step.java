@@ -17,17 +17,6 @@ public class Step {
     @Id
     private Long id;
     @ManyToOne
-    private Machine machine;
-    @ManyToOne
     private Setting setting;
     private String name;
-
-    @Override
-    public String toString() {
-        return "{" +
-                "m=" + machine.getNumberNew() +
-                " " +
-                "s=" + setting.getId() +
-                '}';
-    }
 }

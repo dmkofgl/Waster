@@ -10,8 +10,8 @@ import waster.domain.entity.calendar.Calendar;
 import waster.domain.entity.calendar.Operation;
 import waster.domain.helper.BenchScheduleChartBuilder;
 import waster.domain.helper.BenchScheduleExcelFileBuilder;
-import waster.domain.repository.BenchAndMachineRepository;
-import waster.domain.repository.abstracts.StepRepository;
+import waster.domain.repository.abstracts.BenchRepository;
+import waster.domain.repository.abstracts.SettingsRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.ProcessMapService;
 import waster.math.geneticShuffle;
@@ -26,7 +26,9 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     @Autowired
     private ProcessMapService processMapService;
     @Autowired
-    private StepRepository stepRepository;
+    private SettingsRepository settingsRepository;
+    @Autowired
+    private BenchRepository benchRepository;
 
     @Override
     public BenchScheduler calculateScheduleForBenchesForOrders(Long limitTimeInHours, Iterable<Order> orderList) {
@@ -47,29 +49,46 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
 
     private void fillBenchSchedulerWithOrder(BenchScheduler benchScheduler, Order order) {
         Article article = order.getArticle();
+        //TODO change to real operation name
         String operationName = article.getName() + article.getColoring();
         ProcessMap processMap = article.getProcessMap();
-
-        List<Long> operationsIds = new ArrayList<>(processMapService.getShortestPath(processMap));
+//TODO BREAKPOINT CHANGE Graph to path from ProcessMap
+        MultiValueMap<Long, Setting> settingsId = processMap.getPath();
         long prevOperationStartDate = 0;
-        for (Long stepId : operationsIds) {
-            Operation operation = buildOperation(stepId, prevOperationStartDate, operationName, order.getLength());
-            addOperationInBenchScheduler(benchScheduler, operation);
-            prevOperationStartDate = operation.getEndTime();
+
+        Set<Long> keySet = settingsId.keySet();
+        for (Long key : keySet) {
+            List<Setting> settings = settingsId.get(key);
+            List<Operation> operations = new ArrayList<>();
+            for (Setting s : settings) {
+                Operation operation = buildOperation(s.getId(), prevOperationStartDate, operationName, order.getLength());
+                operations.add(operation);
+            }
+            int indexOfMinEndTime = 0;
+            Long minimumEndTime = Long.MAX_VALUE;
+            for (int i = 0; i < operations.size(); i++) {
+                Long endTime = calculateEndTimeForOperation(benchScheduler, operations.get(i));
+                minimumEndTime = minimumEndTime < endTime ? minimumEndTime : endTime;
+                indexOfMinEndTime = minimumEndTime.equals(endTime) ? indexOfMinEndTime : i;
+            }
+            Operation optimalOperation = operations.get(indexOfMinEndTime);
+            addOperationInBenchScheduler(benchScheduler, optimalOperation);
+            prevOperationStartDate = optimalOperation.getEndTime();
         }
+//
+//        for (Long stepId : settingsId) {
+//            Operation operation = buildOperation(stepId, prevOperationStartDate, operationName, order.getLength());
+//            addOperationInBenchScheduler(benchScheduler, operation);
+//            prevOperationStartDate = operation.getEndTime();
+//        }
 
     }
 
-    private Operation buildOperation(Long stepId, Long initDate, String name, Double length) {
-        Step step = stepRepository.findById(stepId).orElseThrow(RuntimeException::new);
+    private Operation buildOperation(Long settingId, Long initDate, String name, Double length) {
+        Setting setting = settingsRepository.findById(settingId).orElseThrow(RuntimeException::new);
         return Operation.builder()
                 .initialStartDate(initDate)
-                .step(Step.builder()
-                        .id(step.getId())
-                        .machine(step.getMachine())
-                        .name(name)
-                        .setting(step.getSetting())
-                        .build())
+                .setting(setting)
                 .length(length)
                 .build();
     }
@@ -103,11 +122,10 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     }
 
     private Bench getOptimalBenchForExecuteOperation(Operation operation, Map<Bench, Calendar> benchCalendarMap) {
-        final int SMALLER = -1, EQUALS = 0, MORE = 1;
-        MultiValueMap<Machine, Bench> bindMap = new BenchAndMachineRepository().getBindMap();
-        Machine machine = operation.getStep().getMachine();
+        final int LESS = -1, EQUALS = 0, MORE = 1;
+        Machine machine = operation.getSetting().getMachine();
         //достать все машины данного типа
-        List<Bench> benches = bindMap.get(machine);
+        List<Bench> benches = benchRepository.findByMachineNumberNew(machine.getNumberNew());
         return benches.stream().min((x, y) -> {
             if (!(benchCalendarMap.containsKey(x) || benchCalendarMap.containsKey(x))) {
                 return EQUALS;
@@ -116,7 +134,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
                 return MORE;
             }
             if (!benchCalendarMap.containsKey(y)) {
-                return SMALLER;
+                return LESS;
             }
             Calendar calendarPrev = getCalendarForBench(benchCalendarMap, x);
             Calendar calendarNext = getCalendarForBench(benchCalendarMap, y);

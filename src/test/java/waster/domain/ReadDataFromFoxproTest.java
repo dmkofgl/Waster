@@ -30,6 +30,21 @@ public class ReadDataFromFoxproTest {
         String sql = "select kartatp.art as artName, kartatp.naimk_o as modifyName, kartatp.id as processMapId, NKL as coloring " +
                 "from  kartatp inner join kartatp1 " +
                 "where kartatp.id =kartatp1.ID_KARTA ";
+        String selectArtWithColor = "select " +
+                "kartatp.id as artId," +
+                "kartatp1.id as colorId, " +
+                "(kartatp.art + kartatp.naimk_o )as art," +
+                "NKL as color " +
+                " from kartatp inner join kartatp1 " +
+                "where kartatp.id =kartatp1.ID_KARTA ";
+        String select = " id_karta,id_karta1,num_p,id_nastr,art,color ";
+        sql = "select " +
+                select +
+                " from " +
+                "(" + selectArtWithColor + ") as article " +
+                "left join kartatp2 " +
+                "on artId = kartatp2.id_karta and colorId = kartatp2.id_karta1 " +
+                "order by id_karta,id_karta1,num_p";
         System.out.println(sql);
         ResultSet rs = stmt.executeQuery(sql);
         ResultSetMetaData resultSetMetaData = rs.getMetaData();
@@ -41,16 +56,15 @@ public class ReadDataFromFoxproTest {
                     + "  " + resultSetMetaData.getScale(j)
             );
         }
-        Object colval;
-
+        for (int j = 1; j <= iNumCols; j++) {
+            System.out.print(resultSetMetaData.getColumnName(j) + "\t");
+        }
+        System.out.println();
         while (rs.next()) {
-            String art = rs.getObject(1) + (String) rs.getObject(2);
-
-            Article article = Article.builder()
-                    .name(art)
-                    .coloring((String) rs.getObject(4))
-                    .build();
-            articles.add(article);
+            for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                System.out.print(rs.getString(i) + "\t\t\t");
+            }
+            System.out.println();
         }
     }
 
@@ -179,9 +193,6 @@ public class ReadDataFromFoxproTest {
 
     @Test
     public void readSettings() throws ClassNotFoundException, SQLException {
-        final String filePath = System.getProperty("user.dir")
-                + "/src/test/resources/data/",
-                strName = "kartatp.dbf";
         String jdbURL = "jdbc:dbf:/." + "/src/main/resources/Академия/of_proj/dbf";
 
         Class.forName("com.caigen.sql.dbf.DBFDriver");
@@ -214,6 +225,49 @@ public class ReadDataFromFoxproTest {
                     .build();
             settings.add(setting);
         }
+    }
+
+    @Test
+    public void copyProcessMap() throws SQLException, ClassNotFoundException {
+        String jdbURL = "jdbc:dbf:/." + "/src/main/resources/Академия/of_proj/dbf";
+
+        Class.forName("com.caigen.sql.dbf.DBFDriver");
+
+        Properties props = new Properties();
+        props.setProperty("delayedClose", "0");
+
+        String selectArtWithColor = "select " +
+                "kartatp.id as artId," +
+                "kartatp1.id as colorId, " +
+                "(kartatp.art + kartatp.naimk_o )as art," +
+                "NKL as color " +
+                " from kartatp inner join kartatp1 " +
+                "where kartatp.id =kartatp1.ID_KARTA ";
+        String select = " id_karta,id_karta1,num_p,id_nastr,art,color ";
+        String sql = "select " +
+                select +
+                " from " +
+                "(" + selectArtWithColor + ") as article " +
+                "left join kartatp2 " +
+                "on artId = kartatp2.id_karta and colorId = kartatp2.id_karta1 " +
+                "order by id_karta,id_karta1,num_p";
+        Connection conn = DriverManager.getConnection(jdbURL, props);
+        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        ResultSet rs = stmt.executeQuery(sql);
+
+
+        List<ProcessMap> processMaps = new ArrayList<>();
+        while (rs.next()) {
+            String art = rs.getObject(1) + (String) rs.getObject(2);
+            String coloring = rs.getString(4);
+//            Long artId = articleRepository.findByColoringAndName(coloring, art).map(Article::getId).orElse(null);
+            ProcessMap processMap = ProcessMap.builder()
+//                    .articleId(artId)
+                    .build();
+
+            processMaps.add(processMap);
+        }
+//        processMapRepository.saveAll(processMaps);
     }
 }
 

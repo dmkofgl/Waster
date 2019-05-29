@@ -2,10 +2,8 @@ package waster.domain.entity;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import java.util.List;
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -19,7 +17,7 @@ public class Machine {
     private Long numberNew;
     private Long numberOld;
     private String name;
-    @OneToMany
-    private List<Setting> setting;
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<Setting> setting;
 
 }

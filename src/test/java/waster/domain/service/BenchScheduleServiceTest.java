@@ -7,12 +7,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import waster.domain.entity.BenchScheduler;
 import waster.domain.entity.Order;
+import waster.domain.entity.Setting;
 import waster.domain.entity.Step;
 import waster.domain.entity.calendar.Operation;
 import waster.domain.repository.abstracts.ArticleRepository;
 import waster.domain.repository.abstracts.OrderRepository;
+import waster.domain.repository.abstracts.SettingsRepository;
 import waster.domain.repository.abstracts.StepRepository;
-import waster.math.geneticShuffle;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ public class BenchScheduleServiceTest {
     private OrderRepository orderRepository;
     @Autowired
     private ArticleRepository articleRepository;
+    @Autowired
+    private SettingsRepository settingsRepository;
 
     @Test
     public void addOperationInBenchScheduler() throws IOException {
@@ -47,11 +50,11 @@ public class BenchScheduleServiceTest {
         final Long stepId = 6L;
         final double LENGTH = 1000;
         final Long INIT_START_DATE = 0L;
-        Step step = stepRepository.findById(stepId).get();
+        Setting setting = settingsRepository.findById(stepId).get();
         return Operation.builder()
                 .length(LENGTH)
                 .initialStartDate(INIT_START_DATE)
-                .step(step)
+                .setting(setting)
                 .build();
     }
 

@@ -6,6 +6,7 @@ import waster.domain.entity.Setting;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 public class FakeMachineRepository {
 
@@ -31,7 +32,7 @@ public class FakeMachineRepository {
     );
 
     //TODO USE AOP
-    private static Machine createMachine(Long numberNew, Long numberOld, String name, List<Setting> settings) {
+    private static Machine createMachine(Long numberNew, Long numberOld, String name, Set<Setting> settings) {
         Machine machine = new Machine();
         machine.setNumberNew(numberNew);
         machine.setNumberOld(numberOld);

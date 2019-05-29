@@ -47,7 +47,8 @@ public class BenchScheduleChartBuilder {
 
         x = new double[]{schedule.getStart(), schedule.getStart(), schedule.getEnd()};
         scheduleCounter = scheduleCounter + 1;
-        String seriesTitle = scheduleCounter + ")" + schedule.getOperation().getStep().getName();
+        //TODO use real name
+        String seriesTitle = scheduleCounter + ")" + schedule.getOperation().getSetting().getId();
         chart.addSeries(seriesTitle, x, y);
     }
 
