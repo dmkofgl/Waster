@@ -159,15 +159,15 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     }
 
     @Override
-    public void outputInExcelFile(BenchScheduler benchScheduler) throws IOException {
+    public String outputInExcelFile(BenchScheduler benchScheduler) throws IOException {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
         final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + dateFormat.format(date) + ".xlsx";
-        this.outputInExcelFile(EXCEL_FILE_LOCATION, benchScheduler);
+     return    this.outputInExcelFile(EXCEL_FILE_LOCATION, benchScheduler);
     }
 
     @Override
-    public void outputInExcelFile(String pathToFile, BenchScheduler benchScheduler) throws IOException {
+    public String outputInExcelFile(String pathToFile, BenchScheduler benchScheduler) throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         Set<Bench> benches = benchCalendarMap.keySet();
@@ -183,6 +183,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         workbook.write(fos);
         fos.flush();
         fos.close();
+        return pathToFile;
     }
 
     @Override

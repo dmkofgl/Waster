@@ -11,23 +11,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import waster.domain.entity.BenchScheduler;
 import waster.domain.entity.Order;
+import waster.domain.entity.PlanReport;
 import waster.domain.repository.abstracts.OrderRepository;
 import waster.domain.service.BenchScheduleService;
+import waster.domain.service.PlanReportService;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 public class BenchSchedulerController {
     private OrderRepository orderRepository;
     private BenchScheduleService benchScheduleService;
+    private PlanReportService planReportService;
 
     @Autowired
     public BenchSchedulerController(OrderRepository orderRepository, BenchScheduleService benchScheduleService) {
@@ -44,19 +42,24 @@ public class BenchSchedulerController {
 
         BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(calculateRequest.getTimeCountInHour(), orders);
 
-        benchScheduleService.outputInExcelFile(benchScheduler);
+        String pathToFile = benchScheduleService.outputInExcelFile(benchScheduler);
+        PlanReport planReport = PlanReport.builder()
+                .benchScheduler(benchScheduler)
+                .orders(orders)
+                .filePath(pathToFile)
+                .build();
+        planReportService.save(planReport);
     }
 
     @GetMapping("/api/reports")
-    public void viewReports() throws IOException {
-        String pathToReports = System.getProperty("user.dir") + "/src/main/resources/gantt/";
-
-        try (Stream<Path> paths = Files.walk(Paths.get(pathToReports))) {
-            paths
-                    .filter(Files::isRegularFile)
-                    .forEach(System.out::println);
-        }
+    public List<PlanReport> viewReports() throws IOException {
+        return planReportService.findAll();
     }
+    @GetMapping("/api/reports/{id}/download")
+    public List<PlanReport> downloadReport() throws IOException {
+        return planReportService.findAll();
+    }
+
     @Getter
     @Setter
     @AllArgsConstructor
