@@ -126,18 +126,22 @@ public class DbInitFromFoxPro implements CommandLineRunner {
                 "plan_pr.dats," +//3
                 "plan_pr.nkol " +//4
                 "from  plan_pr inner join kartatp " +
-                "where plan_pr.art = kartatp.art + kartatp.naimk_o";
+                "where plan_pr.art = kartatp.art + kartatp.naimk_o " +
+                "and plan_pr.metr>0";
         System.out.println(sql);
         ResultSet rs = stmt.executeQuery(sql);
 
         List<Order> orders = new ArrayList<>();
         while (rs.next()) {
             String art = (String) rs.getObject(1);
-            Double length = rs.getDouble(2);
+            Double length = rs.getDouble(2)*1000;
             Date expireDate = rs.getDate(3);
             String coloring = rs.getString(4);
 
             Article article = articleRepository.findByColoringAndName(coloring, art).orElse(null);
+            if(article==null){
+                continue;
+            }
             Order order = Order.builder()
                     .length(length)
                     .expireDate(expireDate)

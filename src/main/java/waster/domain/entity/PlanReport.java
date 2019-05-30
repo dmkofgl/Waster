@@ -1,11 +1,10 @@
 package waster.domain.entity;
 
 import lombok.*;
+import waster.domain.helper.BenchSchedulerConverter;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -16,9 +15,15 @@ import java.util.List;
 @AllArgsConstructor
 public class PlanReport {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<Order> orders;
+    @Convert(converter = BenchSchedulerConverter.class)
     private BenchScheduler benchScheduler;
     private String filePath;
+    private String reportTitle;
+    private ReportState state;
+    private Date createDate;
+    private Date endDate;
 }

@@ -2,12 +2,13 @@ package waster.domain.entity.calendar;
 
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public class Calendar {
+public class Calendar implements Serializable {
     public static Date START_DATE = new Date();
     @Getter
     private List<Schedule> schedules = new ArrayList<>();

@@ -52,7 +52,6 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         //TODO change to real operation name
         String operationName = article.getName() + article.getColoring();
         ProcessMap processMap = article.getProcessMap();
-//TODO BREAKPOINT CHANGE Graph to path from ProcessMap
         MultiValueMap<Long, Setting> settingsId = processMap.getPath();
         long prevOperationStartDate = 0;
 
@@ -75,13 +74,6 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
             addOperationInBenchScheduler(benchScheduler, optimalOperation);
             prevOperationStartDate = optimalOperation.getEndTime();
         }
-//
-//        for (Long stepId : settingsId) {
-//            Operation operation = buildOperation(stepId, prevOperationStartDate, operationName, order.getLength());
-//            addOperationInBenchScheduler(benchScheduler, operation);
-//            prevOperationStartDate = operation.getEndTime();
-//        }
-
     }
 
     private Operation buildOperation(Long settingId, Long initDate, String name, Double length) {
@@ -163,7 +155,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
         final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + dateFormat.format(date) + ".xlsx";
-     return    this.outputInExcelFile(EXCEL_FILE_LOCATION, benchScheduler);
+        return this.outputInExcelFile(EXCEL_FILE_LOCATION, benchScheduler);
     }
 
     @Override
@@ -184,6 +176,15 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         fos.flush();
         fos.close();
         return pathToFile;
+    }
+
+    @Override
+    public Long getWorkingTimeScheduler(BenchScheduler benchScheduler) {
+        Long endDate = 0L;
+        for (Calendar calendar : benchScheduler.getBenchCalendarMap().values()) {
+            endDate = endDate < calendar.lastActionEndTime() ? calendar.lastActionEndTime() : endDate;
+        }
+        return endDate;
     }
 
     @Override

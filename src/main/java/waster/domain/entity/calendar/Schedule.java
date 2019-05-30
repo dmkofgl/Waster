@@ -1,6 +1,8 @@
 package waster.domain.entity.calendar;
 
-public class Schedule {
+import java.io.Serializable;
+
+public class Schedule implements Serializable {
     private Long start;
     private Operation operation;
 

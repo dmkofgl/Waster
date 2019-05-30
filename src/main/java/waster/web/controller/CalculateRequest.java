@@ -14,5 +14,6 @@ import java.util.List;
 public class CalculateRequest {
     private Long timeCountInHour;
     private List<Long> ordersId;
+    private String reportTitle;
 
 }

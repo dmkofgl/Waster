@@ -1,10 +1,8 @@
 package waster.domain.helper;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import waster.domain.entity.Setting;
-import waster.domain.repository.abstracts.SettingsRepository;
 
 import javax.persistence.AttributeConverter;
 import java.util.List;

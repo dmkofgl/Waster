@@ -3,6 +3,7 @@ package waster.domain.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Set;
 
 @Entity
@@ -12,7 +13,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Machine {
+public class Machine implements Serializable {
     @Id
     private Long numberNew;
     private Long numberOld;
