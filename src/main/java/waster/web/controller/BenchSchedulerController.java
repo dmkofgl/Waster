@@ -10,10 +10,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import waster.domain.entity.BenchScheduler;
-import waster.domain.entity.Order;
-import waster.domain.entity.PlanReport;
-import waster.domain.entity.ReportState;
+import waster.domain.entity.*;
+import waster.domain.entity.calendar.Calendar;
 import waster.domain.repository.abstracts.OrderRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.PlanReportService;
@@ -70,6 +68,30 @@ public class BenchSchedulerController {
     public List<PlanReport> viewReports() throws IOException {
         return planReportService.findAll();
     }
+
+    @GetMapping("/api/reports/{id}")
+    public Object viewReports(@PathVariable("id") Long reportId) throws IOException {
+        PlanReport planReport = planReportService.findById(reportId).orElseThrow(EntityNotFoundException::new);
+        List<ReportDetails> reportDetails = planReport.getBenchScheduler().getBenchCalendarMap().entrySet().stream()
+                .map(e -> new ReportDetails(e.getKey(), e.getValue())).collect(Collectors.toList());
+        return  new ReportDetailsResponse(planReport,reportDetails);
+
+    }
+
+    @AllArgsConstructor
+    @Getter
+    private class ReportDetails {
+        private Bench bench;
+        private Calendar calendar;
+    }
+
+    @AllArgsConstructor
+    @Getter
+    private class ReportDetailsResponse {
+        private PlanReport planReport;
+        private List<ReportDetails> reportDetails;
+    }
+
 
     @GetMapping("/api/reports/{id}/download")
     public ResponseEntity downloadReport(@PathVariable("id") Long reportId) throws IOException {
