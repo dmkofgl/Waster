@@ -1,6 +1,7 @@
 package waster.domain.entity.calendar;
 
 import lombok.Getter;
+import waster.utuls.DateUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,11 +26,55 @@ public class Calendar implements Serializable {
 
     public Schedule applyOperation(Operation operation) {
         operation.setInitialStartDate(calculateStartTimeForOperation(operation));
+
+        if (isOverlapWithSaturday(operation)) {
+            java.util.Calendar c = java.util.Calendar.getInstance();
+            c.setTime(new Date(operation.getInitialStartDate()));
+            c.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY);
+            c.set(java.util.Calendar.HOUR_OF_DAY, 8);
+
+            operation.setInitialStartDate(c.getTime().getTime() - START_DATE.getTime());
+        }
         Schedule newTask = new Schedule(operation);
         schedules.add(newTask);
 
         return newTask;
     }
+
+    private boolean isOverlapWithSaturday(Operation operation) {
+        Long startA = getStartSunday(operation.getInitialStartDate());
+        Long endA = getEndSunday(operation.getInitialStartDate());
+        Long startB = operation.getInitialStartDate() + START_DATE.getTime();
+        Long endB = operation.getEndTime() + START_DATE.getTime();
+        return  DateUtils.isOverlap(startA, endA, startB, endB);
+
+    }
+
+    private boolean isSaturday(Long time) {
+        Date date = new Date(time + START_DATE.getTime());
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTime(date);
+        int dayOfWeek = c.get(java.util.Calendar.DAY_OF_WEEK);
+        return dayOfWeek == 1;
+    }
+
+    private Long getStartSunday(Long time) {
+        Date date = new Date(time + START_DATE.getTime());
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTime(date);
+        c.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
+        c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        return c.getTime().getTime();
+    }
+
+    private Long getEndSunday(Long time) {
+        Date date = new Date(time + START_DATE.getTime());
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY);
+        c.set(java.util.Calendar.HOUR_OF_DAY, 8);
+        return c.getTime().getTime();
+    }
+
 
     public Long calculateStartTimeForOperation(Operation operation) {
         Operation newOperation = Operation.builder()
@@ -45,32 +90,18 @@ public class Calendar implements Serializable {
 
     private void calculateInitialStartTime(Schedule newTask) {
         Optional<Schedule> overlappedSchedule = schedules.stream()
-                .filter(schedule -> isOverlap(schedule, newTask))
+                .filter(schedule -> DateUtils. isOverlap(schedule, newTask))
                 .findFirst();
         if (overlappedSchedule.isPresent()) {
             Schedule engaged = overlappedSchedule.get();
-            newTask.setStart(engaged.getEnd()+1);
+            newTask.setStart(engaged.getEnd() + 1);
             calculateInitialStartTime(newTask);
         }
     }
 
     //TODO WTF???
-    private boolean isOverlap(Schedule existSchedule, Schedule newSchedule) {
-        Long startA = existSchedule.getStart();
-        Long endA = existSchedule.getEnd();
-        Long startB = newSchedule.getStart();
-        Long endB = newSchedule.getEnd();
 
-        return max(startA, startB) <= min(endA, endB);
-    }
 
-    private Long max(Long a, Long b) {
-        return a > b ? a : b;
-    }
-
-    private Long min(Long a, Long b) {
-        return a < b ? a : b;
-    }
 
     public Long lastActionEndTime() {
         return schedules.stream()

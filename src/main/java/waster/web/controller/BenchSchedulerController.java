@@ -39,18 +39,23 @@ public class BenchSchedulerController {
     }
 
     @PostMapping("/api/calculate")
+
+    //TODO split flag to different endpoints
     public ReportState calculateCalendar(@RequestBody CalculateRequest calculateRequest) throws IOException {
         List<Order> orders = calculateRequest.getOrdersId().stream()
                 .map(orderRepository::findById)
                 .map(Optional::get)
                 .collect(Collectors.toList());
         Long limitTimeInMS = calculateRequest.getTimeCountInHour() * 60 * 60 * 1000;
-        BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInMS, orders);
+        BenchScheduler benchScheduler =calculateRequest.isOptimal()?
+                benchScheduleService.findOptimalBenchSchedule(limitTimeInMS, orders)
+                :benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInMS, orders);
 
         String pathToFile = benchScheduleService.outputInExcelFile(benchScheduler);
         ReportState reportState = benchScheduleService.getOverworkedBenches(benchScheduler).size() > 0 ? ReportState.OVERWORKING : ReportState.RIGHT;
         Date createdDate = new Date();
         Date endDate = new Date(createdDate.getTime() + benchScheduleService.getWorkingTimeScheduler(benchScheduler));
+
         PlanReport planReport = PlanReport.builder()
                 .benchScheduler(benchScheduler)
                 .orders(orders)

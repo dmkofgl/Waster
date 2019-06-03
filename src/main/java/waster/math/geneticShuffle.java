@@ -8,6 +8,7 @@ import waster.domain.entity.Order;
 import waster.domain.entity.calendar.Calendar;
 import waster.domain.helper.MapListKey;
 import waster.domain.service.BenchScheduleService;
+import waster.excptions.AllBenchesOverworkingException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,11 +27,6 @@ public class geneticShuffle {
         return orders;
     }
 
-    public List<Order> findOptimaOrderSequence(Long limitTimeInHours, List<Order> orderList) {
-        Map<MapListKey, BenchScheduler> prevGeneration = findOptimalMap(limitTimeInHours, orderList);
-        return getSomeOptimal(prevGeneration).get(0).getOrderList();
-    }
-
     public BenchScheduler findOptimalBenchScheduler(Long limitTimeInHours, List<Order> orderList) {
         Map<MapListKey, BenchScheduler> prevGeneration = findOptimalMap(limitTimeInHours, orderList);
 
@@ -45,9 +41,6 @@ public class geneticShuffle {
             if (getSomeOptimal(prevGeneration).equals((getSomeOptimal(nextGeneration)))) {
                 break;
             }
-            prevGeneration.entrySet()
-                    .stream()
-                    .forEach(es -> System.out.println(findMaxWorkingTime(es.getValue())));
             prevGeneration = nextGeneration;
         }
         return prevGeneration;
@@ -63,7 +56,7 @@ public class geneticShuffle {
         }
         //TODO if there is no any sequence without overworking then you can't execute this orders
         if (checkToAllOverworked(orderBenchSchedulerMap)) {
-            throw new RuntimeException("there is all overworking");
+            throw new AllBenchesOverworkingException();
         }
 
         return orderBenchSchedulerMap;
