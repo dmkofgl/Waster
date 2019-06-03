@@ -2,8 +2,7 @@ package waster.domain.helper;
 
 import org.junit.Test;
 import waster.domain.entity.BenchScheduler;
-
-import static org.junit.Assert.*;
+import waster.domain.helper.converter.BenchSchedulerConverter;
 
 public class BenchSchedulerConverterTest {
 

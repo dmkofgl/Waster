@@ -1,7 +1,12 @@
 package waster.domain.entity.calendar;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 
+@Getter
+@Setter
 public class Schedule implements Serializable {
     private Long start;
     private Operation operation;
@@ -11,24 +16,7 @@ public class Schedule implements Serializable {
         this.start = operation.getInitialStartDate();
     }
 
-    public Long getStart() {
-        return start;
-    }
-
-    public void setStart(Long start) {
-        this.start = start;
-    }
-
     public Long getEnd() {
         return start + operation.getTime();
     }
-
-    public Operation getOperation() {
-        return operation;
-    }
-
-    public void setOperation(Operation operation) {
-        this.operation = operation;
-    }
-
 }

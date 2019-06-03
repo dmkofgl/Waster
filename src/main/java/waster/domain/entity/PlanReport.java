@@ -1,7 +1,7 @@
 package waster.domain.entity;
 
 import lombok.*;
-import waster.domain.helper.BenchSchedulerConverter;
+import waster.domain.helper.converter.BenchSchedulerConverter;
 
 import javax.persistence.*;
 import java.util.Date;

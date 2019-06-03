@@ -13,6 +13,7 @@ import waster.domain.helper.BenchScheduleExcelFileBuilder;
 import waster.domain.repository.abstracts.BenchRepository;
 import waster.domain.repository.abstracts.SettingsRepository;
 import waster.domain.service.BenchScheduleService;
+import waster.domain.service.InterruptionService;
 import waster.domain.service.ProcessMapService;
 import waster.math.geneticShuffle;
 
@@ -29,6 +30,8 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     private SettingsRepository settingsRepository;
     @Autowired
     private BenchRepository benchRepository;
+    @Autowired
+    private InterruptionService interruptionService;
 
     @Override
     public BenchScheduler calculateScheduleForBenchesForOrders(Long limitTimeInHours, Iterable<Order> orderList) {
@@ -38,6 +41,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         }
         return benchScheduler;
     }
+
     //TODO use it in controller
     @Override
     public BenchScheduler findOptimalBenchSchedule(Long limitTimeInHours, List<Order> orderList) {
@@ -94,7 +98,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
         //if there is only one bench then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
-            benchCalendarMap.put(optimalBench, new Calendar());
+            benchCalendarMap.put(optimalBench, new Calendar(interruptionService));
         }
         benchCalendarMap.get(optimalBench).applyOperation(operation);
         return benchScheduler;
@@ -108,7 +112,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
         //if there is only one bench then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
-            benchCalendarMap.put(optimalBench, new Calendar());
+            benchCalendarMap.put(optimalBench, new Calendar(interruptionService));
         }
         return benchCalendarMap.get(optimalBench).calculateStartTimeForOperation(operation);
     }
@@ -138,7 +142,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     //TODO CHANGE IT
     private Calendar getCalendarForBench(Map<Bench, Calendar> benchCalendarMap, Bench bench) {
         if (!benchCalendarMap.containsKey(bench)) {
-            benchCalendarMap.put(bench, new Calendar());
+            benchCalendarMap.put(bench, new Calendar(interruptionService));
         }
         return benchCalendarMap.get(bench);
     }

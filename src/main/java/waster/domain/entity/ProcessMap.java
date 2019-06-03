@@ -10,7 +10,7 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import waster.domain.helper.GraphConverter;
-import waster.domain.helper.MultivalueMapConverter;
+import waster.domain.helper.converter.MultivalueMapConverter;
 
 import javax.persistence.*;
 

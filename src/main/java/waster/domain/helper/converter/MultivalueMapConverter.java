@@ -1,4 +1,4 @@
-package waster.domain.helper;
+package waster.domain.helper.converter;
 
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;

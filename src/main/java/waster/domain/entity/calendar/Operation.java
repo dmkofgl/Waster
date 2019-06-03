@@ -22,8 +22,25 @@ public class Operation implements Serializable {
         } else {
             result = setting.getWorkingSpeed().longValue();
         }
-        return result*60*1000+setting.getPrepareTime();
+        return convertMinuteToMillisecond(result) + setting.getPrepareTime();
     }
+
+    public Long calculateLengthToTime(Long time) {
+        Long timeWithoutPrepare = time - setting.getPrepareTime();
+        Double result = timeWithoutPrepare / convertMeterPerMinuteToMillisecond(setting.getWorkingSpeed());
+        return result.longValue();
+    }
+
+    private Long convertMinuteToMillisecond(Long time) {
+        return time * 60 * 1000;
+    }
+
+    private Double convertMeterPerMinuteToMillisecond(Double speed) {
+        Double result = speed / (60 * 1000);
+
+        return result;
+    }
+
 
     public Long getEndTime() {
         return initialStartDate + getTime();

@@ -5,10 +5,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import waster.domain.entity.*;
+import waster.domain.entity.calendar.Interruption;
 import waster.domain.repository.abstracts.*;
 
-import java.sql.Date;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.*;
 
 @Component
@@ -26,6 +29,8 @@ public class DbInitFromFoxPro implements CommandLineRunner {
     private SettingsRepository settingsRepository;
     @Autowired
     private ProcessMapRepository processMapRepository;
+    @Autowired
+    private InterruptionRepository interruptionRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -42,6 +47,18 @@ public class DbInitFromFoxPro implements CommandLineRunner {
         copyBenches(conn);
         readSettings(conn);
         copyProcessMap(conn);
+        initInterruptions();
+    }
+
+    private void initInterruptions() throws ParseException {
+        String sDate1="8/6/2019";
+        String sDate2="10/6/2019";
+        Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(sDate1);
+        Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse(sDate2);
+        Interruption interruption = new Interruption();
+        interruption.setStart(date1);
+        interruption.setEnd(date2);
+        interruptionRepository.save(interruption);
     }
 
     private void copyArticles(Connection connection) throws SQLException {
@@ -54,8 +71,8 @@ public class DbInitFromFoxPro implements CommandLineRunner {
 
         List<Article> articles = new ArrayList<>();
         while (rs.next()) {
-            String modify= (rs.getString(2) == null) ? "" : rs.getString(2);
-            String art = rs.getString(1) +modify;
+            String modify = (rs.getString(2) == null) ? "" : rs.getString(2);
+            String art = rs.getString(1) + modify;
             String coloring = rs.getString(4);
             coloring = coloring == null ? "" : coloring;
 
@@ -134,12 +151,12 @@ public class DbInitFromFoxPro implements CommandLineRunner {
         List<Order> orders = new ArrayList<>();
         while (rs.next()) {
             String art = (String) rs.getObject(1);
-            Double length = rs.getDouble(2)*1000;
+            Double length = rs.getDouble(2) * 1000;
             Date expireDate = rs.getDate(3);
             String coloring = rs.getString(4);
 
             Article article = articleRepository.findByColoringAndName(coloring, art).orElse(null);
-            if(article==null){
+            if (article == null) {
                 continue;
             }
             Order order = Order.builder()
