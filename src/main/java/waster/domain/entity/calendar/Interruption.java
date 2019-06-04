@@ -1,9 +1,6 @@
 package waster.domain.entity.calendar;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,6 +13,7 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Interruption {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

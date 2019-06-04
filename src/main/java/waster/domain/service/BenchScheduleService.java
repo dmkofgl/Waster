@@ -7,13 +7,14 @@ import waster.domain.entity.calendar.Operation;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 public interface BenchScheduleService {
 
-    BenchScheduler calculateScheduleForBenchesForOrders(Long limitTimeInHours, Iterable<Order> orderList);
+    BenchScheduler calculateScheduleForBenchesForOrders(Date startDate, Long limitTimeInHours, Iterable<Order> orderList);
 
-    BenchScheduler findOptimalBenchSchedule(Long limitTimeInHours, List<Order> orderList);
+    BenchScheduler findOptimalBenchSchedule(Date startDate,Long limitTimeInHours, List<Order> orderList);
 
     Long calculateEndTimeForOperation(BenchScheduler benchScheduler, Operation operation);
 

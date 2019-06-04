@@ -8,7 +8,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import waster.domain.entity.BenchScheduler;
 import waster.domain.entity.Order;
 import waster.domain.entity.Setting;
-import waster.domain.entity.Step;
 import waster.domain.entity.calendar.Operation;
 import waster.domain.repository.abstracts.ArticleRepository;
 import waster.domain.repository.abstracts.OrderRepository;
@@ -17,6 +16,7 @@ import waster.domain.repository.abstracts.StepRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -37,7 +37,9 @@ public class BenchScheduleServiceTest {
     @Test
     public void addOperationInBenchScheduler() throws IOException {
         final Long LIMIT = 8L * 60 * 60 * 1000;
-        BenchScheduler benchScheduler = new BenchScheduler(LIMIT);
+
+        Date date = new Date();
+        BenchScheduler benchScheduler = new BenchScheduler(LIMIT, date);
 
         benchScheduleService.addOperationInBenchScheduler(benchScheduler, buildOperation());
         benchScheduleService.addOperationInBenchScheduler(benchScheduler, buildOperation());
@@ -60,7 +62,8 @@ public class BenchScheduleServiceTest {
 
     @Test
     public void findOptimal() throws IOException {
-        final Long LIMIT = 8L * 60 * 60 * 1000*28;
+        final Long LIMIT = 8L * 60 * 60 * 1000 * 28;
+        Date date = new Date();
         List<Order> orders = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
             double min = 0;
@@ -69,7 +72,7 @@ public class BenchScheduleServiceTest {
             Double length = min + (max - min) * random.nextDouble();
             orders.add(createOrder(3L, length));
         }
-        BenchScheduler benchScheduler = benchScheduleService.findOptimalBenchSchedule(LIMIT, orders);
+        BenchScheduler benchScheduler = benchScheduleService.findOptimalBenchSchedule(date,LIMIT, orders);
 
         benchScheduleService.outputInExcelFile(benchScheduler);
 

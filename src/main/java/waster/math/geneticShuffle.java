@@ -20,12 +20,18 @@ public class geneticShuffle {
     private BenchScheduleService benchScheduleService;
     private int maxGenerationCont = 20;
     final int generationEntityLimit = 5;
+    private final Date startCalculateDate;
+
+    public geneticShuffle(Date startCalculateDate) {
+        this.startCalculateDate = startCalculateDate;
+    }
 
     private List<Order> shuffleOrders(List<Order> sourceOrders) {
         List<Order> orders = new ArrayList<>(sourceOrders);
         Collections.shuffle(orders);
         return orders;
     }
+
 
     public BenchScheduler findOptimalBenchScheduler(Long limitTimeInHours, List<Order> orderList) {
         Map<MapListKey, BenchScheduler> prevGeneration = findOptimalMap(limitTimeInHours, orderList);
@@ -49,10 +55,10 @@ public class geneticShuffle {
     private Map<MapListKey, BenchScheduler> executeGeneration(Long limitTimeInHours, List<Order> orderList) {
         final int genCount = 120;
         Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
-        orderBenchSchedulerMap.put(new MapListKey(orderList), benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInHours, orderList));
+        orderBenchSchedulerMap.put(new MapListKey(orderList), benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, orderList));
         for (int i = 0; i < genCount - 1; i++) {
             List<Order> shuffledOrders = shuffleOrders(orderList);
-            orderBenchSchedulerMap.put(new MapListKey(shuffledOrders), benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInHours, shuffledOrders));
+            orderBenchSchedulerMap.put(new MapListKey(shuffledOrders), benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, shuffledOrders));
         }
         //TODO if there is no any sequence without overworking then you can't execute this orders
         if (checkToAllOverworked(orderBenchSchedulerMap)) {
@@ -87,7 +93,7 @@ public class geneticShuffle {
     private Map<MapListKey, BenchScheduler> calculateNextGeneration(Long limitTimeInHours, List<MapListKey> orderList) {
         Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
         for (MapListKey orders : orderList) {
-            orderBenchSchedulerMap.put(orders, benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInHours, orders.getOrderList()));
+            orderBenchSchedulerMap.put(orders, benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, orders.getOrderList()));
         }
         return orderBenchSchedulerMap;
     }

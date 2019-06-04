@@ -34,8 +34,8 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     private InterruptionService interruptionService;
 
     @Override
-    public BenchScheduler calculateScheduleForBenchesForOrders(Long limitTimeInHours, Iterable<Order> orderList) {
-        BenchScheduler benchScheduler = new BenchScheduler(limitTimeInHours);
+    public BenchScheduler calculateScheduleForBenchesForOrders(Date startDate, Long limitTimeInHours, Iterable<Order> orderList) {
+        BenchScheduler benchScheduler = new BenchScheduler(limitTimeInHours, startDate);
         for (Order order : orderList) {
             fillBenchSchedulerWithOrder(benchScheduler, order);
         }
@@ -44,8 +44,8 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
 
     //TODO use it in controller
     @Override
-    public BenchScheduler findOptimalBenchSchedule(Long limitTimeInHours, List<Order> orderList) {
-        geneticShuffle geneticShuffle = new geneticShuffle();
+    public BenchScheduler findOptimalBenchSchedule(Date startDate, Long limitTimeInHours, List<Order> orderList) {
+        geneticShuffle geneticShuffle = new geneticShuffle(startDate);
         geneticShuffle.setBenchScheduleService(this);
         return geneticShuffle.findOptimalBenchScheduler(limitTimeInHours, orderList);
     }
@@ -64,7 +64,12 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
             List<Setting> settings = settingsId.get(key);
             List<Operation> operations = new ArrayList<>();
             for (Setting s : settings) {
-                Operation operation = buildOperation(s.getId(), prevOperationStartDate, operationName, order.getLength());
+                Operation operation = Operation.builder()
+                        .setting(s)
+                        .initialStartDate(prevOperationStartDate)
+                        .length(order.getLength())
+                        .order(order)
+                        .build();
                 operations.add(operation);
             }
             int indexOfMinEndTime = 0;
@@ -80,25 +85,16 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         }
     }
 
-    private Operation buildOperation(Long settingId, Long initDate, String name, Double length) {
-        Setting setting = settingsRepository.findById(settingId).orElseThrow(RuntimeException::new);
-        return Operation.builder()
-                .initialStartDate(initDate)
-                .setting(setting)
-                .length(length)
-                .build();
-    }
-
 
     @Override
     public BenchScheduler addOperationInBenchScheduler(BenchScheduler benchScheduler, Operation operation) {
         //TODO RENAME IT
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
 
-        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
+        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchScheduler);
         //if there is only one bench then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
-            benchCalendarMap.put(optimalBench, new Calendar(interruptionService));
+            benchCalendarMap.put(optimalBench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
         benchCalendarMap.get(optimalBench).applyOperation(operation);
         return benchScheduler;
@@ -109,16 +105,17 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         //TODO RENAME IT
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
 
-        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
+        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchScheduler);
         //if there is only one bench then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
-            benchCalendarMap.put(optimalBench, new Calendar(interruptionService));
+            benchCalendarMap.put(optimalBench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
         return benchCalendarMap.get(optimalBench).calculateStartTimeForOperation(operation);
     }
 
-    private Bench getOptimalBenchForExecuteOperation(Operation operation, Map<Bench, Calendar> benchCalendarMap) {
+    private Bench getOptimalBenchForExecuteOperation(Operation operation, BenchScheduler benchScheduler) {
         final int LESS = -1, EQUALS = 0, MORE = 1;
+        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         Machine machine = operation.getSetting().getMachine();
         //достать все машины данного типа
         List<Bench> benches = benchRepository.findByMachineNumberNew(machine.getNumberNew());
@@ -132,17 +129,18 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
             if (!benchCalendarMap.containsKey(y)) {
                 return LESS;
             }
-            Calendar calendarPrev = getCalendarForBench(benchCalendarMap, x);
-            Calendar calendarNext = getCalendarForBench(benchCalendarMap, y);
+            Calendar calendarPrev = getCalendarForBench(benchScheduler, x);
+            Calendar calendarNext = getCalendarForBench(benchScheduler, y);
             return compareBenchesStartTimeToOperation(calendarPrev, calendarNext, operation);
         }).get();
     }
 
 
     //TODO CHANGE IT
-    private Calendar getCalendarForBench(Map<Bench, Calendar> benchCalendarMap, Bench bench) {
+    private Calendar getCalendarForBench(BenchScheduler benchScheduler, Bench bench) {
+        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         if (!benchCalendarMap.containsKey(bench)) {
-            benchCalendarMap.put(bench, new Calendar(interruptionService));
+            benchCalendarMap.put(bench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
         return benchCalendarMap.get(bench);
     }

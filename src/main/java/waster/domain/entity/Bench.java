@@ -11,6 +11,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(of={"id"})
 public class Bench implements Serializable {
     //номер машины
     @Id
@@ -19,9 +20,4 @@ public class Bench implements Serializable {
     private String name;
     @ManyToOne
     private Machine machine;
-
-    @Override
-    public boolean equals(Object obj) {
-        return ((Bench) obj).getId() == this.id;
-    }
 }

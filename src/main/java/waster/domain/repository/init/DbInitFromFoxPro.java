@@ -51,14 +51,23 @@ public class DbInitFromFoxPro implements CommandLineRunner {
     }
 
     private void initInterruptions() throws ParseException {
-        String sDate1="8/6/2019";
-        String sDate2="10/6/2019";
-        Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(sDate1);
-        Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse(sDate2);
+        String sDate1 = "8/6/2019";
+        String sDate2 = "10/6/2019";
+        saveInterruption(sDate1, sDate2);
+        sDate1 = "15/6/2019";
+        sDate2 = "17/6/2019";
+        saveInterruption(sDate1, sDate2);
+
+    }
+
+    private void saveInterruption(String startDate, String endDate) throws ParseException {
+        Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(startDate);
+        Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse(endDate);
         Interruption interruption = new Interruption();
         interruption.setStart(date1);
         interruption.setEnd(date2);
         interruptionRepository.save(interruption);
+
     }
 
     private void copyArticles(Connection connection) throws SQLException {

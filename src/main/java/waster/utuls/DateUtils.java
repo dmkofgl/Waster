@@ -13,7 +13,7 @@ public class DateUtils {
     }
 
     public static boolean isOverlap(Long startA, Long endA, Long startB, Long endB) {
-        return max(startA, startB) <= min(endA, endB);
+        return max(startA, startB) < min(endA, endB);
     }
 
     private static Long max(Long a, Long b) {

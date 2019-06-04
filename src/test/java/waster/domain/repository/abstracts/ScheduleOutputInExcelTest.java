@@ -11,6 +11,7 @@ import waster.domain.entity.Order;
 import waster.domain.service.BenchScheduleService;
 
 import java.io.IOException;
+import java.util.Date;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -27,9 +28,10 @@ public class ScheduleOutputInExcelTest {
 
     @Test
     public void outputInExcelFile() throws IOException {
-        final Long LIMIT = 8L*60*60*1000;
+        final Long LIMIT = 8L * 60 * 60 * 1000;
         Iterable<Order> orders = orderRepository.findAll();
-        BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(LIMIT, orders);
+        Date date = new Date();
+        BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(date, LIMIT, orders);
         benchScheduleService.outputInExcelFile(benchScheduler);
     }
 

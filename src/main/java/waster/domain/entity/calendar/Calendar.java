@@ -11,14 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class Calendar implements Serializable {
-    public static Date START_DATE = new Date();
-
+    private Date startDate = new Date();
     private transient InterruptionService interruptionService;
 
     @Getter
     private List<Schedule> schedules = new ArrayList<>();
 
-    public Calendar(InterruptionService interruptionService) {
+    public Calendar(Date startDate, InterruptionService interruptionService) {
+        this.startDate = startDate;
         this.interruptionService = interruptionService;
     }
 
@@ -43,19 +43,26 @@ public class Calendar implements Serializable {
     //TODO DANGEROUS RECURSION
     //TODO BREAKPOINT
     private void batchingOperationIfOverlap(Operation operation) {
-        List<Interruption> allOverlapInteraptions = interruptionService.getAllOverlapInteraptions(operation, START_DATE);
+        Optional<Interruption> overlapInterruption = interruptionService.getFirstOverlapInterruption(operation, startDate);
 
-        allOverlapInteraptions.ifPresent(i -> {
-            if(operation) {
-                Long availableWorkingTime =
-                        Long newLength =
-                        Operation oper = Operation.builder()
+        overlapInterruption.ifPresent(i -> {
+            if (operation.getInitialStartDate() + startDate.getTime() + operation.getSetting().getPrepareTime() < i.getStart().getTime()) {
+                Long availableWorkingTime = i.getStart().getTime() - operation.getInitialStartDate() - startDate.getTime();
+                Double newLength = operation.calculateLengthToTime(availableWorkingTime);
+                Operation oper = Operation.builder()
                         .initialStartDate(operation.getInitialStartDate())
-                        .length(operation.getLength())
+                        .length(newLength)
                         .setting(operation.getSetting())
                         .build();
+                applyOperation(oper);
+                operation.setLength(operation.getLength() - newLength);
             }
-            operation.setInitialStartDate(i.getEnd().getTime() - START_DATE.getTime());
+            operation.setInitialStartDate(i.getEnd().getTime() - startDate.getTime());
+            batchingOperationIfOverlap(operation);
+
+            Long calculatedStartTime = calculateStartTimeForOperation(operation);
+            operation.setInitialStartDate(calculatedStartTime);
+
         });
 
     }

@@ -3,6 +3,7 @@ package waster.domain.entity.calendar;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import waster.domain.entity.Order;
 import waster.domain.entity.Setting;
 
 import java.io.Serializable;
@@ -14,6 +15,8 @@ public class Operation implements Serializable {
     private Double length;
     private Long initialStartDate;
     private Setting setting;
+    private Operation prevOperation;
+    private Order order;
 
     public Long getTime() {
         Long result;
@@ -25,10 +28,10 @@ public class Operation implements Serializable {
         return convertMinuteToMillisecond(result) + setting.getPrepareTime();
     }
 
-    public Long calculateLengthToTime(Long time) {
-        Long timeWithoutPrepare = time - setting.getPrepareTime();
-        Double result = timeWithoutPrepare / convertMeterPerMinuteToMillisecond(setting.getWorkingSpeed());
-        return result.longValue();
+    public Double calculateLengthToTime(Long startTime) {
+        Long timeWithoutPrepare = startTime - setting.getPrepareTime();
+        Double result = timeWithoutPrepare * convertMeterPerMinuteToMillisecond(setting.getWorkingSpeed());
+        return result;
     }
 
     private Long convertMinuteToMillisecond(Long time) {

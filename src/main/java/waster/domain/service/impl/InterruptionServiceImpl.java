@@ -8,10 +8,7 @@ import waster.domain.repository.abstracts.InterruptionRepository;
 import waster.domain.service.InterruptionService;
 import waster.utuls.DateUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class InterruptionServiceImpl implements InterruptionService {
@@ -20,7 +17,7 @@ public class InterruptionServiceImpl implements InterruptionService {
     private InterruptionRepository interruptionRepository;
 
     @Override
-    public List<Interruption> getAllOverlapInteraptions(Operation operation, Date startDate) {
+    public List<Interruption> getAllOverlapInterruptions(Operation operation, Date startDate) {
         List<Interruption> result = new ArrayList<>();
         List<Interruption> interruptions = interruptionRepository.findAll();
         interruptions.sort(Comparator.comparingLong(x -> x.getEnd().getTime()));
@@ -29,6 +26,26 @@ public class InterruptionServiceImpl implements InterruptionService {
                 result.add(interruption);
             }
         }
+        return result;
+    }
+
+    @Override
+    //TODO TEST IT
+    public Optional<Interruption> getLastOverlapInterruption(Operation operation, Date startDate) {
+        Optional<Interruption> result = interruptionRepository.findAll().stream()
+                .filter(i -> isOverlapWithInterruption(operation, i, startDate))
+                .sorted(Comparator.comparingLong(x -> x.getEnd().getTime()))
+                .reduce((x, y) -> y);
+        return result;
+
+    }
+
+    @Override
+    public Optional<Interruption> getFirstOverlapInterruption(Operation operation, Date startDate) {
+        Optional<Interruption> result = interruptionRepository.findAll().stream()
+                .filter(i -> isOverlapWithInterruption(operation, i, startDate))
+                .sorted(Comparator.comparingLong(x -> x.getEnd().getTime()))
+                .reduce((x, y) -> x);
         return result;
     }
 
