@@ -13,7 +13,7 @@ import waster.domain.helper.BenchScheduleExcelFileBuilder;
 import waster.domain.repository.abstracts.BenchRepository;
 import waster.domain.repository.abstracts.SettingsRepository;
 import waster.domain.service.BenchScheduleService;
-import waster.domain.service.ProcessMapService;
+import waster.domain.service.InterruptionService;
 import waster.math.geneticShuffle;
 
 import java.io.FileOutputStream;
@@ -24,15 +24,15 @@ import java.util.*;
 @Service
 public class BenchScheduleServiceImpl implements BenchScheduleService {
     @Autowired
-    private ProcessMapService processMapService;
-    @Autowired
     private SettingsRepository settingsRepository;
     @Autowired
     private BenchRepository benchRepository;
+    @Autowired
+    private InterruptionService interruptionService;
 
     @Override
-    public BenchScheduler calculateScheduleForBenchesForOrders(Long limitTimeInHours, Iterable<Order> orderList) {
-        BenchScheduler benchScheduler = new BenchScheduler(limitTimeInHours);
+    public BenchScheduler calculateScheduleForBenchesForOrders(Date startDate, Long limitTimeInHours, Iterable<Order> orderList) {
+        BenchScheduler benchScheduler = new BenchScheduler(limitTimeInHours, startDate);
         for (Order order : orderList) {
             fillBenchSchedulerWithOrder(benchScheduler, order);
         }
@@ -40,8 +40,8 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     }
 
     @Override
-    public BenchScheduler findOptimalBenchSchedule(Long limitTimeInHours, List<Order> orderList) {
-        geneticShuffle geneticShuffle = new geneticShuffle();
+    public BenchScheduler findOptimalBenchSchedule(Date startDate, Long limitTimeInHours, List<Order> orderList) {
+        geneticShuffle geneticShuffle = new geneticShuffle(startDate);
         geneticShuffle.setBenchScheduleService(this);
         return geneticShuffle.findOptimalBenchScheduler(limitTimeInHours, orderList);
     }
@@ -54,35 +54,40 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         ProcessMap processMap = article.getProcessMap();
         MultiValueMap<Long, Setting> settingsId = processMap.getPath();
         long prevOperationStartDate = 0;
-
+        Operation prevOperation = null;
         Set<Long> keySet = settingsId.keySet();
         for (Long key : keySet) {
             List<Setting> settings = settingsId.get(key);
             List<Operation> operations = new ArrayList<>();
             for (Setting s : settings) {
-                Operation operation = buildOperation(s.getId(), prevOperationStartDate, operationName, order.getLength());
+                //TODO CROUCH
+                Setting setting = settingsRepository.findById(s.getId()).get();
+                Operation operation = Operation.builder()
+                        .setting(setting)
+                        .initialStartDate(prevOperationStartDate)
+                        .length(prevOperation != null ? prevOperation.getLength() : order.getLength())
+                        .order(order)
+                        .build();
                 operations.add(operation);
             }
-            int indexOfMinEndTime = 0;
-            Long minimumEndTime = Long.MAX_VALUE;
-            for (int i = 0; i < operations.size(); i++) {
-                Long endTime = calculateEndTimeForOperation(benchScheduler, operations.get(i));
-                minimumEndTime = minimumEndTime < endTime ? minimumEndTime : endTime;
-                indexOfMinEndTime = minimumEndTime.equals(endTime) ? indexOfMinEndTime : i;
-            }
-            Operation optimalOperation = operations.get(indexOfMinEndTime);
+
+            Operation optimalOperation = findMinEndTimeOperation(operations, benchScheduler);
+            optimalOperation.setPrevOperation(prevOperation);
             addOperationInBenchScheduler(benchScheduler, optimalOperation);
             prevOperationStartDate = optimalOperation.getEndTime();
+            prevOperation = optimalOperation;
         }
     }
 
-    private Operation buildOperation(Long settingId, Long initDate, String name, Double length) {
-        Setting setting = settingsRepository.findById(settingId).orElseThrow(RuntimeException::new);
-        return Operation.builder()
-                .initialStartDate(initDate)
-                .setting(setting)
-                .length(length)
-                .build();
+    private Operation findMinEndTimeOperation(List<Operation> operations, BenchScheduler benchScheduler) {
+        Operation operation = operations.get(0);
+        Long minimumEndTime = operation.getEndTime();
+        for (int i = 0; i < operations.size(); i++) {
+            Long endTime = calculateEndTimeForOperation(benchScheduler, operations.get(i));
+            minimumEndTime = minimumEndTime < endTime ? minimumEndTime : endTime;
+            operation = minimumEndTime.equals(endTime) ? operation : operations.get(i);
+        }
+        return operation;
     }
 
 
@@ -91,10 +96,10 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         //TODO RENAME IT
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
 
-        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
-        //if there is only one bench then min() doesn't called
+        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchScheduler);
+        //if there is only one machine then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
-            benchCalendarMap.put(optimalBench, new Calendar());
+            benchCalendarMap.put(optimalBench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
         benchCalendarMap.get(optimalBench).applyOperation(operation);
         return benchScheduler;
@@ -105,16 +110,17 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         //TODO RENAME IT
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
 
-        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchCalendarMap);
-        //if there is only one bench then min() doesn't called
+        Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchScheduler);
+        //if there is only one machine then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
-            benchCalendarMap.put(optimalBench, new Calendar());
+            benchCalendarMap.put(optimalBench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
         return benchCalendarMap.get(optimalBench).calculateStartTimeForOperation(operation);
     }
 
-    private Bench getOptimalBenchForExecuteOperation(Operation operation, Map<Bench, Calendar> benchCalendarMap) {
+    private Bench getOptimalBenchForExecuteOperation(Operation operation, BenchScheduler benchScheduler) {
         final int LESS = -1, EQUALS = 0, MORE = 1;
+        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         Machine machine = operation.getSetting().getMachine();
         //достать все машины данного типа
         List<Bench> benches = benchRepository.findByMachineNumberNew(machine.getNumberNew());
@@ -128,17 +134,18 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
             if (!benchCalendarMap.containsKey(y)) {
                 return LESS;
             }
-            Calendar calendarPrev = getCalendarForBench(benchCalendarMap, x);
-            Calendar calendarNext = getCalendarForBench(benchCalendarMap, y);
+            Calendar calendarPrev = getCalendarForBench(benchScheduler, x);
+            Calendar calendarNext = getCalendarForBench(benchScheduler, y);
             return compareBenchesStartTimeToOperation(calendarPrev, calendarNext, operation);
         }).get();
     }
 
 
     //TODO CHANGE IT
-    private Calendar getCalendarForBench(Map<Bench, Calendar> benchCalendarMap, Bench bench) {
+    private Calendar getCalendarForBench(BenchScheduler benchScheduler, Bench bench) {
+        Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         if (!benchCalendarMap.containsKey(bench)) {
-            benchCalendarMap.put(bench, new Calendar());
+            benchCalendarMap.put(bench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
         return benchCalendarMap.get(bench);
     }
@@ -154,12 +161,11 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     public String outputInExcelFile(BenchScheduler benchScheduler) throws IOException {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
-        final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + dateFormat.format(date) + ".xlsx";
-        return this.outputInExcelFile(EXCEL_FILE_LOCATION, benchScheduler);
+        return this.outputInExcelFile(dateFormat.format(date), benchScheduler);
     }
 
     @Override
-    public String outputInExcelFile(String pathToFile, BenchScheduler benchScheduler) throws IOException {
+    public String outputInExcelFile(String filename, BenchScheduler benchScheduler) throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         Set<Bench> benches = benchCalendarMap.keySet();
@@ -171,11 +177,13 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         for (Bench bench : benchArrayList) {
             excelFileBuilder.createSheet(bench, benchCalendarMap.get(bench), benchScheduler.LIMIT);
         }
-        FileOutputStream fos = new FileOutputStream(pathToFile);
+
+        final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + filename + ".xlsx";
+        FileOutputStream fos = new FileOutputStream(EXCEL_FILE_LOCATION);
         workbook.write(fos);
         fos.flush();
         fos.close();
-        return pathToFile;
+        return filename;
     }
 
     @Override

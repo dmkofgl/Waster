@@ -1,6 +1,8 @@
 package waster.domain.entity.calendar;
 
 import lombok.Getter;
+import waster.domain.service.InterruptionService;
+import waster.utuls.DateUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,13 +11,16 @@ import java.util.List;
 import java.util.Optional;
 
 public class Calendar implements Serializable {
-    public static Date START_DATE = new Date();
+    //TODO replace it to schedule
+    private Date startDate = new Date();
+    private transient InterruptionService interruptionService;
+
     @Getter
     private List<Schedule> schedules = new ArrayList<>();
 
-    public void addOperation(Operation operation) {
-        Schedule newTask = applyOperation(operation);
-        schedules.add(newTask);
+    public Calendar(Date startDate, InterruptionService interruptionService) {
+        this.startDate = startDate;
+        this.interruptionService = interruptionService;
     }
 
     @Deprecated
@@ -23,12 +28,45 @@ public class Calendar implements Serializable {
         schedules.add(newSchedule);
     }
 
+    //TODO check if exist case when replace after interrupt when operation on this time already exists
     public Schedule applyOperation(Operation operation) {
-        operation.setInitialStartDate(calculateStartTimeForOperation(operation));
+        Long calculatedStartTime = calculateStartTimeForOperation(operation);
+        operation.setInitialStartDate(calculatedStartTime);
+
+        batchingOperationIfOverlap(operation);
+
         Schedule newTask = new Schedule(operation);
         schedules.add(newTask);
 
         return newTask;
+    }
+
+    //TODO DANGEROUS RECURSION
+    //TODO BREAKPOINT
+    private void batchingOperationIfOverlap(Operation operation) {
+        Optional<Interruption> overlapInterruption = interruptionService.getFirstOverlapInterruption(operation, startDate);
+
+        overlapInterruption.ifPresent(i -> {
+            if (operation.getOrder().isAvailableBatching() &&
+                    operation.getInitialStartDate() + startDate.getTime() + operation.getSetting().getPrepareTime() < i.getStart().getTime()) {
+                Long availableWorkingTime = i.getStart().getTime() - operation.getInitialStartDate() - startDate.getTime();
+                Double newLength = operation.calculateLengthToTime(availableWorkingTime);
+                Operation oper = Operation.builder()
+                        .initialStartDate(operation.getInitialStartDate())
+                        .length(newLength)
+                        .setting(operation.getSetting())
+                        .order(operation.getOrder())
+                        .build();
+                applyOperation(oper);
+                operation.setLength(operation.getLength() - newLength);
+            }
+            operation.setInitialStartDate(i.getEnd().getTime() - startDate.getTime());
+            Long calculatedStartTime = calculateStartTimeForOperation(operation);
+            operation.setInitialStartDate(calculatedStartTime);
+            batchingOperationIfOverlap(operation);
+
+        });
+
     }
 
     public Long calculateStartTimeForOperation(Operation operation) {
@@ -45,32 +83,17 @@ public class Calendar implements Serializable {
 
     private void calculateInitialStartTime(Schedule newTask) {
         Optional<Schedule> overlappedSchedule = schedules.stream()
-                .filter(schedule -> isOverlap(schedule, newTask))
+                .filter(schedule -> DateUtils.isOverlap(schedule, newTask))
                 .findFirst();
         if (overlappedSchedule.isPresent()) {
             Schedule engaged = overlappedSchedule.get();
-            newTask.setStart(engaged.getEnd()+1);
+            newTask.setStart(engaged.getEnd() + 1);
             calculateInitialStartTime(newTask);
         }
     }
 
     //TODO WTF???
-    private boolean isOverlap(Schedule existSchedule, Schedule newSchedule) {
-        Long startA = existSchedule.getStart();
-        Long endA = existSchedule.getEnd();
-        Long startB = newSchedule.getStart();
-        Long endB = newSchedule.getEnd();
 
-        return max(startA, startB) <= min(endA, endB);
-    }
-
-    private Long max(Long a, Long b) {
-        return a > b ? a : b;
-    }
-
-    private Long min(Long a, Long b) {
-        return a < b ? a : b;
-    }
 
     public Long lastActionEndTime() {
         return schedules.stream()

@@ -15,6 +15,7 @@ import waster.domain.entity.calendar.Calendar;
 import waster.domain.repository.abstracts.OrderRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.PlanReportService;
+import waster.excptions.AllBenchesOverworkingException;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.File;
@@ -39,29 +40,57 @@ public class BenchSchedulerController {
     }
 
     @PostMapping("/api/calculate")
+
+    //TODO split flag to different endpoints
+    //TODO change if to @valid
     public ReportState calculateCalendar(@RequestBody CalculateRequest calculateRequest) throws IOException {
+        if (calculateRequest.getStartDate() == null) {
+            calculateRequest.setStartDate(new Date());
+        }
+
         List<Order> orders = calculateRequest.getOrdersId().stream()
                 .map(orderRepository::findById)
                 .map(Optional::get)
                 .collect(Collectors.toList());
-        Long limitTimeInMS = calculateRequest.getTimeCountInHour() * 60 * 60 * 1000;
-        BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(limitTimeInMS, orders);
-
-        String pathToFile = benchScheduleService.outputInExcelFile(benchScheduler);
-        ReportState reportState = benchScheduleService.getOverworkedBenches(benchScheduler).size() > 0 ? ReportState.OVERWORKING : ReportState.RIGHT;
         Date createdDate = new Date();
-        Date endDate = new Date(createdDate.getTime() + benchScheduleService.getWorkingTimeScheduler(benchScheduler));
         PlanReport planReport = PlanReport.builder()
-                .benchScheduler(benchScheduler)
                 .orders(orders)
-                .filePath(pathToFile)
                 .reportTitle(calculateRequest.getReportTitle())
                 .createDate(createdDate)
-                .endDate(endDate)
-                .state(reportState)
+                .state(ReportState.CALCULATING)
                 .build();
+
+        Runnable task = () -> {
+            try {
+                calculateTask(calculateRequest, planReport);
+            }catch (Exception e){
+                planReport.setState(ReportState.ABORTED);
+                planReportService.save(planReport);
+            }
+        };
+        Thread thread = new Thread(task);
+        thread.start();
+
         planReportService.save(planReport);
-        return reportState;
+        return ReportState.CALCULATING;
+    }
+
+    private void calculateTask(CalculateRequest calculateRequest, PlanReport report) throws IOException {
+        List<Order> orders = report.getOrders();
+        Long limitTimeInMS = calculateRequest.getTimeCountInHour() * 60 * 60 * 1000;
+        BenchScheduler benchScheduler = calculateRequest.isOptimal() ?
+                benchScheduleService.findOptimalBenchSchedule(calculateRequest.getStartDate(), limitTimeInMS, orders)
+                : benchScheduleService.calculateScheduleForBenchesForOrders(calculateRequest.getStartDate(), limitTimeInMS, orders);
+
+        String pathToFile = benchScheduleService.outputInExcelFile(report.getId()+report.getReportTitle(),benchScheduler);
+        ReportState reportState = benchScheduleService.getOverworkedBenches(benchScheduler).size() > 0 ? ReportState.OVERWORKING : ReportState.RIGHT;
+        Date endDate = new Date();
+
+        report.setBenchScheduler(benchScheduler);
+        report.setFilePath(pathToFile);
+        report.setEndDate(endDate);
+        report.setState(reportState);
+        planReportService.save(report);
     }
 
     @GetMapping("/api/reports")
@@ -74,7 +103,7 @@ public class BenchSchedulerController {
         PlanReport planReport = planReportService.findById(reportId).orElseThrow(EntityNotFoundException::new);
         List<ReportDetails> reportDetails = planReport.getBenchScheduler().getBenchCalendarMap().entrySet().stream()
                 .map(e -> new ReportDetails(e.getKey(), e.getValue())).collect(Collectors.toList());
-        return  new ReportDetailsResponse(planReport,reportDetails);
+        return new ReportDetailsResponse(planReport, reportDetails);
 
     }
 

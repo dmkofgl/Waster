@@ -5,19 +5,19 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(of={"id"})
-public class Bench implements Serializable {
-    //номер машины
+@AllArgsConstructor
+@Entity
+public class KPV  {
     @Id
-    @GeneratedValue
     private Long id;
-    private String name;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Machine machine;
+    private Double minSpeed;
+    private Double maxSpeed;
+    private Double rate;
+
 }
