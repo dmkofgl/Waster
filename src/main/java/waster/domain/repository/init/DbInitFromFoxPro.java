@@ -31,6 +31,8 @@ public class DbInitFromFoxPro implements CommandLineRunner {
     private ProcessMapRepository processMapRepository;
     @Autowired
     private InterruptionRepository interruptionRepository;
+    @Autowired
+    private KPVRepository kpvRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -48,6 +50,44 @@ public class DbInitFromFoxPro implements CommandLineRunner {
         readSettings(conn);
         copyProcessMap(conn);
         initInterruptions();
+        copyKPV(conn);
+    }
+
+    public void copyKPV(Connection connection) throws SQLException {
+        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        String sql = "select" +
+                " id," +//1
+                "kod_ob," +//2
+                "s_min," +//3
+                "s_max," +//4
+                "koef " +//5
+                "from  sp_kpv";
+        System.out.println(sql);
+        ResultSet rs = stmt.executeQuery(sql);
+
+        List<KPV> kpvs = new ArrayList<>();
+        while (rs.next()) {
+            Long id = rs.getLong(1);
+            Long benchId = rs.getLong(2);
+            Double minSpeed = rs.getDouble(3);
+            Double maxSpeed = rs.getDouble(4);
+            Double rate = rs.getDouble(5);
+            Machine machine = machineRepository.findById(benchId).orElse(null);
+            KPV kpv = KPV.builder()
+                    .id(id)
+                    .machine(machine)
+                    .minSpeed(minSpeed)
+                    .maxSpeed(maxSpeed)
+                    .rate(rate)
+                    .build();
+            kpvs.add(kpv);
+            kpvRepository.save(kpv);
+            if (machine != null) {
+                machine.addKPV(kpv);
+
+                machineRepository.save(machine);
+            }
+        }
     }
 
     private void initInterruptions() throws ParseException {
@@ -56,6 +96,12 @@ public class DbInitFromFoxPro implements CommandLineRunner {
         saveInterruption(sDate1, sDate2);
         sDate1 = "15/6/2019";
         sDate2 = "17/6/2019";
+        saveInterruption(sDate1, sDate2);
+        sDate1 = "22/6/2019";
+        sDate2 = "24/6/2019";
+        saveInterruption(sDate1, sDate2);
+        sDate1 = "29/6/2019";
+        sDate2 = "1/7/2019";
         saveInterruption(sDate1, sDate2);
 
     }
@@ -131,7 +177,7 @@ public class DbInitFromFoxPro implements CommandLineRunner {
                 processMap.setArticleId(article.getId());
             }
 
-            Setting setting = Setting.builder().id(settingId).build();
+            Setting setting = settingsRepository.findById(settingId).orElse(Setting.builder().id(settingId).build());
 
             processMap.getPath().add(iterationIndex, setting);
             processMaps.add(processMap);
@@ -180,8 +226,7 @@ public class DbInitFromFoxPro implements CommandLineRunner {
     }
 
     @Transactional
-    public void readSettings(Connection connection) throws ClassNotFoundException, SQLException {
-
+    public List<Setting> readSettings(Connection connection) throws ClassNotFoundException, SQLException {
         Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         String sql = "select" +
                 " z_nastr.id," +//1
@@ -196,11 +241,20 @@ public class DbInitFromFoxPro implements CommandLineRunner {
             Long id = rs.getLong(1);
             Long machineId = rs.getLong(2);
             Double speed = rs.getDouble(3);
+            boolean isDependOnLength = true;
+            if (speed == 0) {
+                isDependOnLength = false;
+                //TODO crouch. stub default 2 hour
+                speed = 2 * 60.0;
+
+            }
             Machine machine = machineRepository.findById(machineId).get();
+
             Setting setting = Setting.builder()
                     .id(id)
                     .workingSpeed(speed)
                     .machine(machine)
+                    .timeDependOnLength(isDependOnLength)
                     .build();
             settings.add(setting);
             Set<Setting> machineSetting = machine.getSetting();
@@ -213,6 +267,7 @@ public class DbInitFromFoxPro implements CommandLineRunner {
             }
         }
         settingsRepository.saveAll(settings);
+        return settings;
     }
 
     public void copyMachines(Connection connection) throws SQLException {

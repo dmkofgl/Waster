@@ -15,6 +15,7 @@ import waster.domain.entity.calendar.Calendar;
 import waster.domain.repository.abstracts.OrderRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.PlanReportService;
+import waster.excptions.AllBenchesOverworkingException;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.File;
@@ -62,8 +63,9 @@ public class BenchSchedulerController {
         Runnable task = () -> {
             try {
                 calculateTask(calculateRequest, planReport);
-            } catch (IOException e) {
-               throw  new RuntimeException();
+            }catch (Exception e){
+                planReport.setState(ReportState.ABORTED);
+                planReportService.save(planReport);
             }
         };
         Thread thread = new Thread(task);
@@ -82,7 +84,7 @@ public class BenchSchedulerController {
 
         String pathToFile = benchScheduleService.outputInExcelFile(report.getId()+report.getReportTitle(),benchScheduler);
         ReportState reportState = benchScheduleService.getOverworkedBenches(benchScheduler).size() > 0 ? ReportState.OVERWORKING : ReportState.RIGHT;
-        Date endDate = new Date(report.getCreateDate().getTime() + benchScheduleService.getWorkingTimeScheduler(benchScheduler));
+        Date endDate = new Date();
 
         report.setBenchScheduler(benchScheduler);
         report.setFilePath(pathToFile);

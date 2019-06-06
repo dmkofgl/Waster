@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class Calendar implements Serializable {
+    //TODO replace it to schedule
     private Date startDate = new Date();
     private transient InterruptionService interruptionService;
 
@@ -46,22 +47,23 @@ public class Calendar implements Serializable {
         Optional<Interruption> overlapInterruption = interruptionService.getFirstOverlapInterruption(operation, startDate);
 
         overlapInterruption.ifPresent(i -> {
-            if (operation.getInitialStartDate() + startDate.getTime() + operation.getSetting().getPrepareTime() < i.getStart().getTime()) {
+            if (operation.getOrder().isAvailableBatching() &&
+                    operation.getInitialStartDate() + startDate.getTime() + operation.getSetting().getPrepareTime() < i.getStart().getTime()) {
                 Long availableWorkingTime = i.getStart().getTime() - operation.getInitialStartDate() - startDate.getTime();
                 Double newLength = operation.calculateLengthToTime(availableWorkingTime);
                 Operation oper = Operation.builder()
                         .initialStartDate(operation.getInitialStartDate())
                         .length(newLength)
                         .setting(operation.getSetting())
+                        .order(operation.getOrder())
                         .build();
                 applyOperation(oper);
                 operation.setLength(operation.getLength() - newLength);
             }
             operation.setInitialStartDate(i.getEnd().getTime() - startDate.getTime());
-            batchingOperationIfOverlap(operation);
-
             Long calculatedStartTime = calculateStartTimeForOperation(operation);
             operation.setInitialStartDate(calculatedStartTime);
+            batchingOperationIfOverlap(operation);
 
         });
 

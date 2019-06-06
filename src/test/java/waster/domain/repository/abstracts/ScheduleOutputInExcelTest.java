@@ -26,7 +26,6 @@ public class ScheduleOutputInExcelTest {
         Assert.assertNotNull(benchScheduleService);
     }
 
-    @Test
     public void outputInExcelFile() throws IOException {
         final Long LIMIT = 8L * 60 * 60 * 1000;
         Iterable<Order> orders = orderRepository.findAll();

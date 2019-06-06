@@ -17,6 +17,6 @@ public class CalculateRequest {
     private Date startDate;
     private List<Long> ordersId;
     private String reportTitle;
-    private boolean isOptimal;
+    private boolean optimal;
 
 }

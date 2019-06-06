@@ -14,7 +14,6 @@ import waster.domain.repository.abstracts.BenchRepository;
 import waster.domain.repository.abstracts.SettingsRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.InterruptionService;
-import waster.domain.service.ProcessMapService;
 import waster.math.geneticShuffle;
 
 import java.io.FileOutputStream;
@@ -24,8 +23,6 @@ import java.util.*;
 
 @Service
 public class BenchScheduleServiceImpl implements BenchScheduleService {
-    @Autowired
-    private ProcessMapService processMapService;
     @Autowired
     private SettingsRepository settingsRepository;
     @Autowired
@@ -42,7 +39,6 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         return benchScheduler;
     }
 
-    //TODO use it in controller
     @Override
     public BenchScheduler findOptimalBenchSchedule(Date startDate, Long limitTimeInHours, List<Order> orderList) {
         geneticShuffle geneticShuffle = new geneticShuffle(startDate);
@@ -58,31 +54,40 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         ProcessMap processMap = article.getProcessMap();
         MultiValueMap<Long, Setting> settingsId = processMap.getPath();
         long prevOperationStartDate = 0;
-
+        Operation prevOperation = null;
         Set<Long> keySet = settingsId.keySet();
         for (Long key : keySet) {
             List<Setting> settings = settingsId.get(key);
             List<Operation> operations = new ArrayList<>();
             for (Setting s : settings) {
+                //TODO CROUCH
+                Setting setting = settingsRepository.findById(s.getId()).get();
                 Operation operation = Operation.builder()
-                        .setting(s)
+                        .setting(setting)
                         .initialStartDate(prevOperationStartDate)
-                        .length(order.getLength())
+                        .length(prevOperation != null ? prevOperation.getLength() : order.getLength())
                         .order(order)
                         .build();
                 operations.add(operation);
             }
-            int indexOfMinEndTime = 0;
-            Long minimumEndTime = Long.MAX_VALUE;
-            for (int i = 0; i < operations.size(); i++) {
-                Long endTime = calculateEndTimeForOperation(benchScheduler, operations.get(i));
-                minimumEndTime = minimumEndTime < endTime ? minimumEndTime : endTime;
-                indexOfMinEndTime = minimumEndTime.equals(endTime) ? indexOfMinEndTime : i;
-            }
-            Operation optimalOperation = operations.get(indexOfMinEndTime);
+
+            Operation optimalOperation = findMinEndTimeOperation(operations, benchScheduler);
+            optimalOperation.setPrevOperation(prevOperation);
             addOperationInBenchScheduler(benchScheduler, optimalOperation);
             prevOperationStartDate = optimalOperation.getEndTime();
+            prevOperation = optimalOperation;
         }
+    }
+
+    private Operation findMinEndTimeOperation(List<Operation> operations, BenchScheduler benchScheduler) {
+        Operation operation = operations.get(0);
+        Long minimumEndTime = operation.getEndTime();
+        for (int i = 0; i < operations.size(); i++) {
+            Long endTime = calculateEndTimeForOperation(benchScheduler, operations.get(i));
+            minimumEndTime = minimumEndTime < endTime ? minimumEndTime : endTime;
+            operation = minimumEndTime.equals(endTime) ? operation : operations.get(i);
+        }
+        return operation;
     }
 
 
@@ -92,7 +97,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
 
         Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchScheduler);
-        //if there is only one bench then min() doesn't called
+        //if there is only one machine then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
             benchCalendarMap.put(optimalBench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
@@ -106,7 +111,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
 
         Bench optimalBench = getOptimalBenchForExecuteOperation(operation, benchScheduler);
-        //if there is only one bench then min() doesn't called
+        //if there is only one machine then min() doesn't called
         if (!benchCalendarMap.containsKey(optimalBench)) {
             benchCalendarMap.put(optimalBench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
@@ -156,12 +161,11 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     public String outputInExcelFile(BenchScheduler benchScheduler) throws IOException {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
-        final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + dateFormat.format(date) + ".xlsx";
-        return this.outputInExcelFile(EXCEL_FILE_LOCATION, benchScheduler);
+        return this.outputInExcelFile(dateFormat.format(date), benchScheduler);
     }
 
     @Override
-    public String outputInExcelFile(String pathToFile, BenchScheduler benchScheduler) throws IOException {
+    public String outputInExcelFile(String filename, BenchScheduler benchScheduler) throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         Set<Bench> benches = benchCalendarMap.keySet();
@@ -173,11 +177,13 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         for (Bench bench : benchArrayList) {
             excelFileBuilder.createSheet(bench, benchCalendarMap.get(bench), benchScheduler.LIMIT);
         }
-        FileOutputStream fos = new FileOutputStream(pathToFile);
+
+        final String EXCEL_FILE_LOCATION = System.getProperty("user.dir") + "/src/main/resources/gantt/" + filename + ".xlsx";
+        FileOutputStream fos = new FileOutputStream(EXCEL_FILE_LOCATION);
         workbook.write(fos);
         fos.flush();
         fos.close();
-        return pathToFile;
+        return filename;
     }
 
     @Override

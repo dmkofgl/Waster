@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 public class MultivalueMapConverter implements AttributeConverter<MultiValueMap<Long, Setting>, String> {
 
-
     @Override
     public String convertToDatabaseColumn(MultiValueMap<Long, Setting> longSettingMultiValueMap) {
         StringBuilder result = new StringBuilder();
@@ -25,6 +24,7 @@ public class MultivalueMapConverter implements AttributeConverter<MultiValueMap<
     }
 
     @Override
+    //TODO Replace settings to long as id
     public MultiValueMap<Long, Setting> convertToEntityAttribute(String s) {
 
         String[] records = s.split(";");

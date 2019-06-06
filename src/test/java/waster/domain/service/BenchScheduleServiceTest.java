@@ -62,19 +62,19 @@ public class BenchScheduleServiceTest {
 
     @Test
     public void findOptimal() throws IOException {
-        final Long LIMIT = 8L * 60 * 60 * 1000 * 28;
-        Date date = new Date();
-        List<Order> orders = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
-            double min = 0;
-            double max = 1 * 1000 * 60 * 60;
-            Random random = new Random();
-            Double length = min + (max - min) * random.nextDouble();
-            orders.add(createOrder(3L, length));
-        }
-        BenchScheduler benchScheduler = benchScheduleService.findOptimalBenchSchedule(date,LIMIT, orders);
-
-        benchScheduleService.outputInExcelFile(benchScheduler);
+//        final Long LIMIT = 8L * 60 * 60 * 1000 * 28;
+//        Date date = new Date();
+//        List<Order> orders = new ArrayList<>();
+//        for (int i = 0; i < 100; i++) {
+//            double min = 0;
+//            double max = 1 * 1000 * 60 * 60;
+//            Random random = new Random();
+//            Double length = min + (max - min) * random.nextDouble();
+//            orders.add(createOrder(3L, length));
+//        }
+//        BenchScheduler benchScheduler = benchScheduleService.findOptimalBenchSchedule(date,LIMIT, orders);
+//
+//        benchScheduleService.outputInExcelFile(benchScheduler);
 
     }
 

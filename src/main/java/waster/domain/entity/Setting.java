@@ -24,5 +24,4 @@ public class Setting implements Serializable {
     private boolean timeDependOnLength = true;
     @ManyToOne
     private Machine machine;
-
 }

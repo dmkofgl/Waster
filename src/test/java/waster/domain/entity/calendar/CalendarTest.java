@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import waster.domain.entity.Order;
 import waster.domain.entity.Setting;
 import waster.domain.repository.abstracts.InterruptionRepository;
 import waster.domain.service.InterruptionService;
@@ -26,6 +27,8 @@ public class CalendarTest {
     private InterruptionService interruptionService;
 
     @Test
+    public void convertToEntityAttribute() {
+    }
     public void applyOperation_whenInterrupted_shouldSplitToTwoOperations() {
         Long prepareTime = 100L;
         Long startDate = 0L;
@@ -35,6 +38,9 @@ public class CalendarTest {
         Long interruptionEnd = interruptionStart + 300L;
         Double length = 1000.0;
         Double workingSpeed = 15.0;
+        Order order = Order.builder()
+                .availableBatching(true)
+                .build();
         Setting setting = Setting.builder()
                 .workingSpeed(workingSpeed)
                 .prepareTime(prepareTime)
@@ -43,6 +49,7 @@ public class CalendarTest {
                 .initialStartDate(startDate)
                 .length(length)
                 .setting(setting)
+                .order(order)
                 .build();
         List<Interruption> interruption = Lists.of(Interruption.builder()
                 .start(new Date(interruptionStart))
@@ -54,7 +61,6 @@ public class CalendarTest {
         assertEquals(2, calendar.getSchedules().size());
     }
 
-    @Test
     public void applyOperation_whenInterrupted_shouldSplitToThreeOperations() {
         Long prepareTime = 100L;
         Long startDate = 0L;
@@ -93,7 +99,7 @@ public class CalendarTest {
         calendar.applyOperation(operation);
         assertEquals(3, calendar.getSchedules().size());
     }
-    @Test
+
     public void applyOperation_whenStartDateExists_shouldSplitToThreeOperations() {
 
         Long startDate = new Date().getTime();
@@ -114,7 +120,7 @@ public class CalendarTest {
                 .setting(setting)
                 .build();
 
-        Long interruptionStart =startDate+ initDate + 1500L;
+        Long interruptionStart = startDate + initDate + 1500L;
         Long interruptionEnd = interruptionStart + 300L;
 
         Long interruptionStartNext = interruptionEnd + 1000L;

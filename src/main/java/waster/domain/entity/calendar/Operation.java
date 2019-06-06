@@ -3,9 +3,12 @@ package waster.domain.entity.calendar;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import waster.domain.entity.KPV;
 import waster.domain.entity.Order;
 import waster.domain.entity.Setting;
 
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import java.io.Serializable;
 
 @Builder
@@ -16,16 +19,34 @@ public class Operation implements Serializable {
     private Long initialStartDate;
     private Setting setting;
     private Operation prevOperation;
+    @OneToMany(fetch = FetchType.EAGER)
     private Order order;
 
     public Long getTime() {
-        Long result;
+        Double result;
         if (setting.isTimeDependOnLength()) {
-            result = Double.valueOf(length / setting.getWorkingSpeed()).longValue();
+            result = length / setting.getWorkingSpeed();
         } else {
-            result = setting.getWorkingSpeed().longValue();
+            result = setting.getWorkingSpeed();
         }
-        return convertMinuteToMillisecond(result) + setting.getPrepareTime();
+        //TODO UGLY
+        Double kpv;
+        try {
+            kpv = setting.getMachine().getKpvList().stream()
+                    .filter(this::isSuit)
+                    .findFirst()
+                    .map(KPV::getRate)
+                    .orElse(0.8);
+        } catch (Exception e) {
+            kpv = 0.8;
+        }
+        result = convertMinuteToMillisecond(result) / kpv;
+        return Double.valueOf(result + setting.getPrepareTime()).longValue();
+    }
+
+    private boolean isSuit(KPV kpv) {
+        Double speed = setting.getWorkingSpeed();
+        return speed >= kpv.getMinSpeed() && speed <= kpv.getMaxSpeed();
     }
 
     public Double calculateLengthToTime(Long startTime) {
@@ -34,7 +55,7 @@ public class Operation implements Serializable {
         return result;
     }
 
-    private Long convertMinuteToMillisecond(Long time) {
+    private Double convertMinuteToMillisecond(Double time) {
         return time * 60 * 1000;
     }
 
