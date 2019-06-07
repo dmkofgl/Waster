@@ -20,6 +20,7 @@ public class geneticShuffle {
     private BenchScheduleService benchScheduleService;
     private int maxGenerationCont = 20;
     final int generationEntityLimit = 5;
+    final int genCount = 120;
     private final Date startCalculateDate;
 
     public geneticShuffle(Date startCalculateDate) {
@@ -32,7 +33,6 @@ public class geneticShuffle {
         return orders;
     }
 
-
     public BenchScheduler findOptimalBenchScheduler(Long limitTimeInHours, List<Order> orderList) {
         Map<MapListKey, BenchScheduler> prevGeneration = findOptimalMap(limitTimeInHours, orderList);
 
@@ -42,7 +42,8 @@ public class geneticShuffle {
     private Map<MapListKey, BenchScheduler> findOptimalMap(Long limitTimeInHours, List<Order> orderList) {
         Map<MapListKey, BenchScheduler> prevGeneration = executeGeneration(limitTimeInHours, orderList);
         for (int i = 0; i < maxGenerationCont; i++) {
-            Map<MapListKey, BenchScheduler> nextGeneration = calculateNextGeneration(limitTimeInHours, crossover(prevGeneration));
+            List<MapListKey> nextOrders = crossover(prevGeneration);
+            Map<MapListKey, BenchScheduler> nextGeneration = calculateNextGeneration(limitTimeInHours, nextOrders);
             //if optimal gens are equals then you don't calculate more optimal result
             if (getSomeOptimal(prevGeneration).equals((getSomeOptimal(nextGeneration)))) {
                 break;
@@ -53,14 +54,13 @@ public class geneticShuffle {
     }
 
     private Map<MapListKey, BenchScheduler> executeGeneration(Long limitTimeInHours, List<Order> orderList) {
-        final int genCount = 120;
         Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
         orderBenchSchedulerMap.put(new MapListKey(orderList), benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, orderList));
         for (int i = 0; i < genCount - 1; i++) {
             List<Order> shuffledOrders = shuffleOrders(orderList);
-            orderBenchSchedulerMap.put(new MapListKey(shuffledOrders), benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, shuffledOrders));
+            BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, shuffledOrders);
+            orderBenchSchedulerMap.put(new MapListKey(shuffledOrders), benchScheduler);
         }
-        //TODO if there is no any sequence without overworking then you can't execute this orders
         if (checkToAllOverworked(orderBenchSchedulerMap)) {
             throw new AllBenchesOverworkingException();
         }
@@ -71,43 +71,16 @@ public class geneticShuffle {
     private List<MapListKey> crossover(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
         List<MapListKey> prevOptimalGeneration = getSomeOptimal(OrderBenchSchedulerMap);
         List<MapListKey> nextGeneration = new LinkedList<>(prevOptimalGeneration);
-        for (int i = 0; i < prevOptimalGeneration.size() - 1; i++) {
-
+        for (int i = 0; i < prevOptimalGeneration.size(); i++) {
             for (int j = i; j < prevOptimalGeneration.size(); j++) {
-                MapListKey temp = halfCombineOrders(prevOptimalGeneration.get(i), prevOptimalGeneration.get(j));
-                nextGeneration.add(temp);
+                MapListKey halfCombineOrders = halfCombineOrders(prevOptimalGeneration.get(i), prevOptimalGeneration.get(j));
+                MapListKey serialCombineOrders = serialCombineOrders(prevOptimalGeneration.get(i), prevOptimalGeneration.get((j)));
+                nextGeneration.add(halfCombineOrders);
+                nextGeneration.add(serialCombineOrders);
             }
         }
         return nextGeneration;
     }
-
-    private List<MapListKey> getSomeOptimal(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
-        return OrderBenchSchedulerMap.entrySet()
-                .parallelStream()
-                .sorted(Comparator.comparingLong(es -> this.findMaxWorkingTime(es.getValue())))
-                .limit(generationEntityLimit)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-    }
-
-    private Map<MapListKey, BenchScheduler> calculateNextGeneration(Long limitTimeInHours, List<MapListKey> orderList) {
-        Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
-        for (MapListKey orders : orderList) {
-            orderBenchSchedulerMap.put(orders, benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, orders.getOrderList()));
-        }
-        return orderBenchSchedulerMap;
-    }
-
-
-    private boolean checkToAllOverworked(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
-        Set<MapListKey> orderKeySet = OrderBenchSchedulerMap.keySet();
-        List<MapListKey> ordersWithoutOverworking = orderKeySet.stream()
-                .filter(list -> benchScheduleService.getOverworkedBenches(OrderBenchSchedulerMap.get(list)).size() == 0)
-                .collect(Collectors.toList());
-        return ordersWithoutOverworking.isEmpty();
-
-    }
-
 
     private MapListKey halfCombineOrders(MapListKey firstGen, MapListKey secondGen) {
         List<Order> result = new ArrayList<>();
@@ -121,6 +94,50 @@ public class geneticShuffle {
         }
         result.addAll(secondGenArray);
         return new MapListKey(result);
+    }
+
+    private MapListKey serialCombineOrders(MapListKey firstGen, MapListKey secondGen) {
+        List<Order> result = new ArrayList<>();
+        List<Order> firstGenArray = new ArrayList<>(firstGen.getOrderList());
+        List<Order> secondGenArray = new ArrayList<>(secondGen.getOrderList());
+        int i = 0;
+        while (firstGenArray.size() > 0) {
+//TODO crouch
+            Order order = i % 2 == 0 ? firstGenArray.get(0) : secondGenArray.get(0);
+            firstGenArray.remove(order);
+            secondGenArray.remove(order);
+            result.add(order);
+            i++;
+        }
+        return new MapListKey(result);
+    }
+
+
+    private List<MapListKey> getSomeOptimal(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
+        return OrderBenchSchedulerMap.entrySet()
+                .parallelStream()
+                .sorted(Comparator.comparingLong(es -> this.findMaxWorkingTime(es.getValue())))
+                .limit(generationEntityLimit)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    private Map<MapListKey, BenchScheduler> calculateNextGeneration(Long limitTimeInHours, List<MapListKey> orderList) {
+        Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
+        for (MapListKey orders : orderList) {
+            BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, orders.getOrderList());
+            orderBenchSchedulerMap.put(orders, benchScheduler);
+        }
+        return orderBenchSchedulerMap;
+    }
+
+    private boolean checkToAllOverworked(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
+        Set<MapListKey> orderKeySet = OrderBenchSchedulerMap.keySet();
+        List<MapListKey> ordersWithoutOverworking = orderKeySet.stream()
+                .filter(list -> benchScheduleService.getOverworkedBenches(OrderBenchSchedulerMap.get(list)).size() == 0)
+                .collect(Collectors.toList());
+        return ordersWithoutOverworking.isEmpty();
+
     }
 
     public Long findMaxWorkingTime(BenchScheduler benchScheduler) {

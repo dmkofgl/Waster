@@ -15,7 +15,6 @@ import waster.domain.entity.calendar.Calendar;
 import waster.domain.repository.abstracts.OrderRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.PlanReportService;
-import waster.excptions.AllBenchesOverworkingException;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.File;
@@ -63,8 +62,9 @@ public class BenchSchedulerController {
         Runnable task = () -> {
             try {
                 calculateTask(calculateRequest, planReport);
-            }catch (Exception e){
+            } catch (Exception e) {
                 planReport.setState(ReportState.ABORTED);
+                planReport.setEndDate(new Date());
                 planReportService.save(planReport);
             }
         };
@@ -82,7 +82,7 @@ public class BenchSchedulerController {
                 benchScheduleService.findOptimalBenchSchedule(calculateRequest.getStartDate(), limitTimeInMS, orders)
                 : benchScheduleService.calculateScheduleForBenchesForOrders(calculateRequest.getStartDate(), limitTimeInMS, orders);
 
-        String pathToFile = benchScheduleService.outputInExcelFile(report.getId()+report.getReportTitle(),benchScheduler);
+        String pathToFile = benchScheduleService.outputInExcelFile(report.getId() + report.getReportTitle(), benchScheduler);
         ReportState reportState = benchScheduleService.getOverworkedBenches(benchScheduler).size() > 0 ? ReportState.OVERWORKING : ReportState.RIGHT;
         Date endDate = new Date();
 
