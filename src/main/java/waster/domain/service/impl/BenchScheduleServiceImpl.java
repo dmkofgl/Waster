@@ -183,7 +183,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         workbook.write(fos);
         fos.flush();
         fos.close();
-        return filename;
+        return EXCEL_FILE_LOCATION;
     }
 
     @Override
