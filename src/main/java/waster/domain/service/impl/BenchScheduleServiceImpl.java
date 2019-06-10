@@ -171,8 +171,8 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Set<Bench> benches = benchCalendarMap.keySet();
         List<Bench> benchArrayList = new ArrayList<>(benches);
         benchArrayList.sort((x, y) -> (int) (x.getId() - y.getId()));
-        BenchScheduleExcelFileBuilder excelFileBuilder = new BenchScheduleExcelFileBuilder(workbook);
-        excelFileBuilder.createCommonSheet(benchCalendarMap);
+        BenchScheduleExcelFileBuilder excelFileBuilder = new BenchScheduleExcelFileBuilder(benchScheduler.getStart(),workbook);
+        excelFileBuilder.createCommonSheet(benchCalendarMap, benchScheduler.getStart());
         excelFileBuilder.createOverWorkedList(getOverworkedBenches(benchScheduler));
         for (Bench bench : benchArrayList) {
             excelFileBuilder.createSheet(bench, benchCalendarMap.get(bench), benchScheduler.LIMIT);
