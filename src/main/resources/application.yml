@@ -25,3 +25,5 @@ spring:
       settings:
         trace: false
         web-allow-others: false
+foxpro:
+  path: /./src/main/resources/Академия/of_proj/dbf

@@ -30,7 +30,7 @@ public class Calendar implements Serializable {
 
     //TODO check if exist case when replace after interrupt when operation on this time already exists
     public Schedule applyOperation(Operation operation) {
-        Long calculatedStartTime = calculateStartTimeForOperation(operation);
+        Long calculatedStartTime = calculateEndTimeForOperation(operation);
         operation.setInitialStartDate(calculatedStartTime);
 
         batchingOperationIfOverlap(operation);
@@ -61,7 +61,7 @@ public class Calendar implements Serializable {
                 operation.setLength(operation.getLength() - newLength);
             }
             operation.setInitialStartDate(i.getEnd().getTime() - startDate.getTime());
-            Long calculatedStartTime = calculateStartTimeForOperation(operation);
+            Long calculatedStartTime = calculateEndTimeForOperation(operation);
             operation.setInitialStartDate(calculatedStartTime);
             batchingOperationIfOverlap(operation);
 
@@ -69,7 +69,7 @@ public class Calendar implements Serializable {
 
     }
 
-    public Long calculateStartTimeForOperation(Operation operation) {
+    public Long calculateEndTimeForOperation(Operation operation) {
         Operation newOperation = Operation.builder()
                 .initialStartDate(operation.getInitialStartDate())
                 .length(operation.getLength())
@@ -78,7 +78,7 @@ public class Calendar implements Serializable {
 
         Schedule newTask = new Schedule(newOperation);
         calculateInitialStartTime(newTask);
-        return newTask.getStart();
+        return newTask.getEnd();
     }
 
     private void calculateInitialStartTime(Schedule newTask) {

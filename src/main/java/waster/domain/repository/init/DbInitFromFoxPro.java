@@ -1,6 +1,7 @@
 package waster.domain.repository.init;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +35,12 @@ public class DbInitFromFoxPro implements CommandLineRunner {
     @Autowired
     private KPVRepository kpvRepository;
 
+    @Value("${foxpro.path}")
+    private String path;
+
     @Override
     public void run(String... args) throws Exception {
-        String jdbURL = "jdbc:dbf:/." + "/src/main/resources/Академия/of_proj/dbf";
+        String jdbURL ="jdbc:dbf:" + ( path != null ? path : "/./src/main/resources/Академия/of_proj/dbf");
         Class.forName("com.caigen.sql.dbf.DBFDriver");
         Properties props = new Properties();
         props.setProperty("delayedClose", "0");
