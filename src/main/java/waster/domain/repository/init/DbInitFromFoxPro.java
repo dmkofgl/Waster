@@ -40,21 +40,27 @@ public class DbInitFromFoxPro implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String jdbURL ="jdbc:dbf:" + ( path != null ? path : "/./src/main/resources/Академия/of_proj/dbf");
-        Class.forName("com.caigen.sql.dbf.DBFDriver");
-        Properties props = new Properties();
-        props.setProperty("delayedClose", "0");
+        try {
+            String jdbURL ="jdbc:dbf:" + ( path != null ? path : "/./src/main/resources/Академия/of_proj/dbf");
+            Class.forName("com.caigen.sql.dbf.DBFDriver");
+            Properties props = new Properties();
+            props.setProperty("delayedClose", "0");
 
-        Connection conn = DriverManager.getConnection(jdbURL, props);
+            Connection conn = DriverManager.getConnection(jdbURL, props);
 
-        copyArticles(conn);
-        copyOrders(conn);
-        copyMachines(conn);
-        copyBenches(conn);
-        readSettings(conn);
-        copyProcessMap(conn);
-        initInterruptions();
-        copyKPV(conn);
+            copyArticles(conn);
+            copyOrders(conn);
+            copyMachines(conn);
+            copyBenches(conn);
+            readSettings(conn);
+            copyProcessMap(conn);
+            initInterruptions();
+            copyKPV(conn);
+        }catch (Exception e){
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+
     }
 
     public void copyKPV(Connection connection) throws SQLException {
