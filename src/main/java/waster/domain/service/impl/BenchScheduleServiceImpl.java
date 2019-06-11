@@ -14,7 +14,7 @@ import waster.domain.repository.abstracts.BenchRepository;
 import waster.domain.repository.abstracts.SettingsRepository;
 import waster.domain.service.BenchScheduleService;
 import waster.domain.service.InterruptionService;
-import waster.math.geneticShuffle;
+import waster.math.GeneticShuffle;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,8 +41,10 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
 
     @Override
     public BenchScheduler findOptimalBenchSchedule(Date startDate, Long limitTimeInHours, List<Order> orderList) {
-        geneticShuffle geneticShuffle = new geneticShuffle(startDate);
-        geneticShuffle.setBenchScheduleService(this);
+        GeneticShuffle geneticShuffle = GeneticShuffle.builder()
+                .benchScheduleService(this)
+                .startCalculateDate(startDate)
+                .build();
         return geneticShuffle.findOptimalBenchScheduler(limitTimeInHours, orderList);
     }
 
@@ -140,8 +142,6 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         }).get();
     }
 
-
-    //TODO CHANGE IT
     private Calendar getCalendarForBench(BenchScheduler benchScheduler, Bench bench) {
         Map<Bench, Calendar> benchCalendarMap = benchScheduler.getBenchCalendarMap();
         if (!benchCalendarMap.containsKey(bench)) {
@@ -151,6 +151,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     }
 
     // Compare equals benches which can start earlier
+    //TODO test IT
     private int compareBenchesStartTimeToOperation(Calendar calendarPrev, Calendar calendarNext, Operation operation) {
         Long startSchedulePrev = calendarPrev.calculateStartTimeForOperation(operation);
         Long startScheduleNext = calendarNext.calculateStartTimeForOperation(operation);
@@ -171,7 +172,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Set<Bench> benches = benchCalendarMap.keySet();
         List<Bench> benchArrayList = new ArrayList<>(benches);
         benchArrayList.sort((x, y) -> (int) (x.getId() - y.getId()));
-        BenchScheduleExcelFileBuilder excelFileBuilder = new BenchScheduleExcelFileBuilder(benchScheduler.getStart(),workbook);
+        BenchScheduleExcelFileBuilder excelFileBuilder = new BenchScheduleExcelFileBuilder(benchScheduler.getStart(), workbook);
         excelFileBuilder.createCommonSheet(benchCalendarMap, benchScheduler.getStart());
         excelFileBuilder.createOverWorkedList(getOverworkedBenches(benchScheduler));
         for (Bench bench : benchArrayList) {
@@ -190,7 +191,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     public Long getWorkingTimeScheduler(BenchScheduler benchScheduler) {
         Long endDate = 0L;
         for (Calendar calendar : benchScheduler.getBenchCalendarMap().values()) {
-            endDate = endDate < calendar.lastActionEndTime() ? calendar.lastActionEndTime() : endDate;
+            endDate = endDate < calendar.lastSchedulesActionEndTime() ? calendar.lastSchedulesActionEndTime() : endDate;
         }
         return endDate;
     }
@@ -218,7 +219,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         Set<Bench> benches = benchScheduler.getBenchCalendarMap().keySet();
         for (Bench bench : benches) {
             Calendar calendar = benchScheduler.getBenchCalendarMap().get(bench);
-            if (calendar.lastActionEndTime() > benchScheduler.LIMIT) {
+            if (calendar.lastSchedulesActionEndTime() > benchScheduler.LIMIT) {
                 overworkedBenches.add(bench);
             }
         }

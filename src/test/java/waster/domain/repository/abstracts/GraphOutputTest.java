@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-//TODO replace this method in service class
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class GraphOutputTest {

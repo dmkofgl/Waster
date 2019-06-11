@@ -30,7 +30,6 @@ public class InterruptionServiceImpl implements InterruptionService {
     }
 
     @Override
-    //TODO TEST IT
     public Optional<Interruption> getLastOverlapInterruption(Operation operation, Date startDate) {
         Optional<Interruption> result = interruptionRepository.findAll().stream()
                 .filter(i -> isOverlapWithInterruption(operation, i, startDate))

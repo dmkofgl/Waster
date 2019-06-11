@@ -29,7 +29,6 @@ public class Operation implements Serializable {
         } else {
             result = setting.getWorkingSpeed();
         }
-        //TODO UGLY
         Double kpv;
         try {
             kpv = setting.getMachine().getKpvList().stream()

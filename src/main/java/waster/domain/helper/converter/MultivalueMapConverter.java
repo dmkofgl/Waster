@@ -24,7 +24,6 @@ public class MultivalueMapConverter implements AttributeConverter<MultiValueMap<
     }
 
     @Override
-    //TODO Replace settings to long as id
     public MultiValueMap<Long, Setting> convertToEntityAttribute(String s) {
 
         String[] records = s.split(";");

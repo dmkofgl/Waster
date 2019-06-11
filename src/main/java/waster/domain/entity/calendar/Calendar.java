@@ -42,7 +42,6 @@ public class Calendar implements Serializable {
     }
 
     //TODO DANGEROUS RECURSION
-    //TODO BREAKPOINT
     private void batchingOperationIfOverlap(Operation operation) {
         Optional<Interruption> overlapInterruption = interruptionService.getFirstOverlapInterruption(operation, startDate);
 
@@ -91,11 +90,7 @@ public class Calendar implements Serializable {
             calculateInitialStartTime(newTask);
         }
     }
-
-    //TODO WTF???
-
-
-    public Long lastActionEndTime() {
+    public Long lastSchedulesActionEndTime() {
         return schedules.stream()
                 .map(Schedule::getEnd)
                 .max(Long::compareTo)
