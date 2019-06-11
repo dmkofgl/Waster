@@ -131,10 +131,10 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
                 return EQUALS;
             }
             if (!benchCalendarMap.containsKey(x)) {
-                return MORE;
+                return LESS;
             }
             if (!benchCalendarMap.containsKey(y)) {
-                return LESS;
+                return MORE;
             }
             Calendar calendarPrev = getCalendarForBench(benchScheduler, x);
             Calendar calendarNext = getCalendarForBench(benchScheduler, y);

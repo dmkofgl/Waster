@@ -19,8 +19,11 @@ import java.util.stream.Collectors;
 @Builder
 public class GeneticShuffle {
     private BenchScheduleService benchScheduleService;
+    @Builder.Default
     private int maxGenerationCont = 20;
+    @Builder.Default
     private int generationEntityLimit = 5;
+    @Builder.Default
     private int genCount = 120;
     private Date startCalculateDate = new Date();
 
@@ -112,7 +115,7 @@ public class GeneticShuffle {
 
     private List<MapListKey> getSomeOptimal(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
         return OrderBenchSchedulerMap.entrySet()
-                .parallelStream()
+                .stream()
                 .sorted(Comparator.comparingLong(es -> this.findMaxWorkingTime(es.getValue())))
                 .limit(generationEntityLimit)
                 .map(Map.Entry::getKey)

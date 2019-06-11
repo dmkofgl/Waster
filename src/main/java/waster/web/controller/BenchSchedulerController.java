@@ -60,6 +60,7 @@ public class BenchSchedulerController {
             try {
                 calculateTask(calculateRequest, planReport);
             } catch (Exception e) {
+                e.printStackTrace();
                 planReport.setState(ReportState.ABORTED);
                 planReport.setEndDate(new Date());
                 planReportService.save(planReport);
