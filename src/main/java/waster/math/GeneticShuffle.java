@@ -1,7 +1,6 @@
 package waster.math;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import waster.domain.entity.Bench;
 import waster.domain.entity.BenchScheduler;
 import waster.domain.entity.Order;
@@ -15,17 +14,16 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class geneticShuffle {
-    //TODO UGLY
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class GeneticShuffle {
     private BenchScheduleService benchScheduleService;
     private int maxGenerationCont = 20;
-    final int generationEntityLimit = 5;
-    final int genCount = 120;
-    private final Date startCalculateDate;
+    private int generationEntityLimit = 5;
+    private int genCount = 120;
+    private Date startCalculateDate = new Date();
 
-    public geneticShuffle(Date startCalculateDate) {
-        this.startCalculateDate = startCalculateDate;
-    }
 
     private List<Order> shuffleOrders(List<Order> sourceOrders) {
         List<Order> orders = new ArrayList<>(sourceOrders);
@@ -102,7 +100,6 @@ public class geneticShuffle {
         List<Order> secondGenArray = new ArrayList<>(secondGen.getOrderList());
         int i = 0;
         while (firstGenArray.size() > 0) {
-//TODO crouch
             Order order = i % 2 == 0 ? firstGenArray.get(0) : secondGenArray.get(0);
             firstGenArray.remove(order);
             secondGenArray.remove(order);
@@ -146,8 +143,8 @@ public class geneticShuffle {
         Long maxTime = 0L;
         for (Bench bench : benches) {
             Calendar calendar = benchCalendarMap.get(bench);
-            maxTime = calendar.lastActionEndTime() > maxTime
-                    ? calendar.lastActionEndTime()
+            maxTime = calendar.lastSchedulesActionEndTime() > maxTime
+                    ? calendar.lastSchedulesActionEndTime()
                     : maxTime;
         }
         return maxTime;

@@ -74,8 +74,7 @@ public class BenchScheduleExcelFileBuilder {
         }
     }
 
-    //TODO to test
-    private String durationHourAndMinutes(Schedule schedule) {
+    protected String durationHourAndMinutes(Schedule schedule) {
         Long different = schedule.getEnd() - schedule.getStart() ;
 
         long secondsInMilli = 1000;
@@ -130,8 +129,6 @@ public class BenchScheduleExcelFileBuilder {
         }
     }
 
-
-    //TODO IMPLEMENT IT https://github.com/knowm/XChart
     private void createChart(XSSFSheet sheet, Bench bench, Calendar calendar, double limit) throws IOException {
         final CreationHelper helper = workbook.getCreationHelper();
         final XSSFDrawing drawing = sheet.createDrawingPatriarch();
@@ -142,15 +139,11 @@ public class BenchScheduleExcelFileBuilder {
         byte[] bytes = benchScheduleChartBuilder.getChartAsByteArray(chart);
         final int pictureIndex = workbook.addPicture(bytes, Workbook.PICTURE_TYPE_PNG);
 
-        anchor.setCol1(6);
+        anchor.setCol1(9);
         anchor.setRow1(1); // same row is okay
         anchor.setRow2(20);
         anchor.setCol2(26);
         final Picture pict = drawing.createPicture(anchor, pictureIndex);
-        createRealChart(sheet);
-    }
-
-    private void createRealChart(XSSFSheet sheet) {
     }
 
     private static void createRow(XSSFSheet sheet, int rowNum, String... cellNames) {
@@ -159,19 +152,5 @@ public class BenchScheduleExcelFileBuilder {
             Cell cell = row.createCell(i);
             cell.setCellValue(cellNames[i]);
         }
-    }
-
-    private static void createNumRow(XSSFSheet sheet, int rowNum, String c1, String c2, String c3) {
-        Row row = sheet.createRow(rowNum);
-        Cell cell0 = row.createCell(0);
-        cell0.setCellValue(c1);
-
-        Cell cell1 = row.createCell(1);
-
-        cell1.setCellValue(c2);
-
-        Cell cell2 = row.createCell(2);
-        cell2.setCellValue(c3);
-
     }
 }

@@ -39,9 +39,6 @@ public class BenchSchedulerController {
     }
 
     @PostMapping("/api/calculate")
-
-    //TODO split flag to different endpoints
-    //TODO change if to @valid
     public ReportState calculateCalendar(@RequestBody CalculateRequest calculateRequest) throws IOException {
         if (calculateRequest.getStartDate() == null) {
             calculateRequest.setStartDate(new Date());

@@ -1,5 +1,6 @@
 package waster.domain.entity;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import waster.domain.entity.calendar.Calendar;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class BenchScheduler implements Serializable {
     private Date start;
     public final Long LIMIT;
