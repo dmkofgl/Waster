@@ -117,7 +117,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
         if (!benchCalendarMap.containsKey(optimalBench)) {
             benchCalendarMap.put(optimalBench, new Calendar(benchScheduler.getStart(), interruptionService));
         }
-        return benchCalendarMap.get(optimalBench).calculateStartTimeForOperation(operation);
+        return benchCalendarMap.get(optimalBench).calculateEndTimeForOperation(operation);
     }
 
     private Bench getOptimalBenchForExecuteOperation(Operation operation, BenchScheduler benchScheduler) {
@@ -153,8 +153,8 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
     // Compare equals benches which can start earlier
     //TODO test IT
     private int compareBenchesStartTimeToOperation(Calendar calendarPrev, Calendar calendarNext, Operation operation) {
-        Long startSchedulePrev = calendarPrev.calculateStartTimeForOperation(operation);
-        Long startScheduleNext = calendarNext.calculateStartTimeForOperation(operation);
+        Long startSchedulePrev = calendarPrev.calculateEndTimeForOperation(operation);
+        Long startScheduleNext = calendarNext.calculateEndTimeForOperation(operation);
         return Long.compare(startSchedulePrev, startScheduleNext);
     }
 
