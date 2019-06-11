@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class GeneticShuffle {
     private BenchScheduleService benchScheduleService;
     @Builder.Default
-    private int maxGenerationCont = 20;
+    private int maxGenerationCount = 20;
     @Builder.Default
     private int generationEntityLimit = 5;
     @Builder.Default
@@ -42,7 +42,7 @@ public class GeneticShuffle {
 
     private Map<MapListKey, BenchScheduler> findOptimalMap(Long limitTimeInHours, List<Order> orderList) {
         Map<MapListKey, BenchScheduler> prevGeneration = executeGeneration(limitTimeInHours, orderList);
-        for (int i = 0; i < maxGenerationCont; i++) {
+        for (int i = 0; i < maxGenerationCount; i++) {
             List<MapListKey> nextOrders = crossover(prevGeneration);
             Map<MapListKey, BenchScheduler> nextGeneration = calculateNextGeneration(limitTimeInHours, nextOrders);
             //if optimal gens are equals then you don't calculate more optimal result
@@ -83,7 +83,7 @@ public class GeneticShuffle {
         return nextGeneration;
     }
 
-    private MapListKey halfCombineOrders(MapListKey firstGen, MapListKey secondGen) {
+    protected MapListKey halfCombineOrders(MapListKey firstGen, MapListKey secondGen) {
         List<Order> result = new ArrayList<>();
         List<Order> firstGenArray = new ArrayList<>(firstGen.getOrderList());
         List<Order> secondGenArray = new ArrayList<>(secondGen.getOrderList());
@@ -113,7 +113,7 @@ public class GeneticShuffle {
     }
 
 
-    private List<MapListKey> getSomeOptimal(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
+    protected List<MapListKey> getSomeOptimal(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
         return OrderBenchSchedulerMap.entrySet()
                 .stream()
                 .sorted(Comparator.comparingLong(es -> this.findMaxWorkingTime(es.getValue())))
