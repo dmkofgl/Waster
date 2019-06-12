@@ -115,7 +115,7 @@ public class GeneticShuffle {
 
     protected List<MapListKey> getSomeOptimal(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
         return OrderBenchSchedulerMap.entrySet()
-                .stream()
+                .parallelStream()
                 .sorted(Comparator.comparingLong(es -> this.findMaxWorkingTime(es.getValue())))
                 .limit(generationEntityLimit)
                 .map(Map.Entry::getKey)
@@ -133,7 +133,7 @@ public class GeneticShuffle {
 
     private boolean checkToAllOverworked(Map<MapListKey, BenchScheduler> OrderBenchSchedulerMap) {
         Set<MapListKey> orderKeySet = OrderBenchSchedulerMap.keySet();
-        List<MapListKey> ordersWithoutOverworking = orderKeySet.stream()
+        List<MapListKey> ordersWithoutOverworking = orderKeySet.parallelStream()
                 .filter(list -> benchScheduleService.getOverworkedBenches(OrderBenchSchedulerMap.get(list)).size() == 0)
                 .collect(Collectors.toList());
         return ordersWithoutOverworking.isEmpty();

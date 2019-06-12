@@ -34,7 +34,7 @@ public class BenchScheduleExcelFileBuilder {
 
         createRow(sheet, counter++, "Номер оборудования", "Метраж", "Артикул", "Колорит", "Номер заказа", "Время начала", "Длительность", "Время окончания");
         Set<Bench> benches = benchCalendarMap.keySet();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
         List<Bench> benchArrayList = new ArrayList<>(benches);
         benchArrayList.sort((x, y) -> (int) (x.getId() - y.getId()));
@@ -107,10 +107,10 @@ public class BenchScheduleExcelFileBuilder {
     public void createSheet(Bench bench, Calendar calendar, double limit) {
         XSSFSheet sheet = workbook.createSheet(String.valueOf((bench.getId())));
         int counter = 0;
-        createRow(sheet, counter++, "Артикул", "Колорит", "Номер заказа", "Длина", "Время начала", "Длительность", "Время окончания");
+        createRow(sheet, counter++, "Артикул", "Колорит", "Номер заказа", "Длина", "Время начала", "Длительность (дней: часов: минут: секунд)", "Время окончания");
 
         List<Schedule> schedules = calendar.getSchedules();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         for (Schedule schedule : schedules) {
             createRow(sheet,
                     counter++,

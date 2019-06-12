@@ -138,7 +138,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
             }
             Calendar calendarPrev = getCalendarForBench(benchScheduler, x);
             Calendar calendarNext = getCalendarForBench(benchScheduler, y);
-            return compareBenchesStartTimeToOperation(calendarPrev, calendarNext, operation);
+            return compareBenchesEndTimeToOperation(calendarPrev, calendarNext, operation);
         }).get();
     }
 
@@ -152,7 +152,7 @@ public class BenchScheduleServiceImpl implements BenchScheduleService {
 
     // Compare equals benches which can start earlier
     //TODO test IT
-    private int compareBenchesStartTimeToOperation(Calendar calendarPrev, Calendar calendarNext, Operation operation) {
+    private int compareBenchesEndTimeToOperation(Calendar calendarPrev, Calendar calendarNext, Operation operation) {
         Long startSchedulePrev = calendarPrev.calculateEndTimeForOperation(operation);
         Long startScheduleNext = calendarNext.calculateEndTimeForOperation(operation);
         return Long.compare(startSchedulePrev, startScheduleNext);
