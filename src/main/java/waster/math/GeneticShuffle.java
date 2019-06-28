@@ -124,10 +124,9 @@ public class GeneticShuffle {
 
     private Map<MapListKey, BenchScheduler> calculateNextGeneration(Long limitTimeInHours, List<MapListKey> orderList) {
         Map<MapListKey, BenchScheduler> orderBenchSchedulerMap = new HashMap<>();
-        for (MapListKey orders : orderList) {
-            BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, orders.getOrderList());
-            orderBenchSchedulerMap.put(orders, benchScheduler);
-        }
+        orderList.parallelStream().forEach(x-> {
+            BenchScheduler benchScheduler = benchScheduleService.calculateScheduleForBenchesForOrders(startCalculateDate, limitTimeInHours, x.getOrderList());
+            orderBenchSchedulerMap.put(x, benchScheduler);});
         return orderBenchSchedulerMap;
     }
 
